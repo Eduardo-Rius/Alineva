@@ -1,0 +1,157 @@
+.forWhomSection {
+  background-color: var(--color-white);
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--section-space);
+}
+
+/* Intro Block */
+.introBlock {
+  max-width: 800px;
+}
+
+.headline {
+  margin-bottom: var(--spacing-lg);
+  color: var(--color-primary-green);
+}
+
+.introText {
+  font-size: clamp(1.125rem, 2vw, 1.375rem);
+  max-width: 650px;
+}
+
+/* Situations Grid (Editorial List) */
+.situationsGrid {
+  display: flex;
+  flex-direction: column;
+}
+
+.situationItem {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--spacing-md);
+  padding: var(--spacing-lg) 0;
+  border-top: 1px solid var(--color-border);
+}
+
+.situationItem:last-child {
+  border-bottom: 1px solid var(--color-border);
+}
+
+.situationNumber {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  color: var(--color-accent-orange);
+  line-height: 1;
+}
+
+.situationText {
+  font-size: 1.125rem;
+  color: var(--color-text-primary);
+  line-height: 1.5;
+}
+
+/* Closing Block */
+.closingBlock {
+  max-width: 700px;
+  margin-left: auto; /* Push to right on desktop */
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+}
+
+.closingText {
+  font-size: clamp(1.125rem, 2vw, 1.375rem);
+  color: var(--color-primary-green);
+  font-weight: 500;
+}
+
+.ctaButton {
+  background-color: transparent;
+  color: var(--color-primary-green);
+  padding: 16px 32px;
+  border-radius: var(--radius-sm);
+  font-weight: 500;
+  text-align: center;
+  border: 1px solid var(--color-primary-green);
+  align-self: flex-start;
+  transition: background-color var(--transition-fast), color var(--transition-fast);
+}
+
+.ctaButton:hover {
+  background-color: var(--color-primary-green);
+  color: var(--color-white);
+}
+
+/* Desktop Overrides */
+@media (min-width: 768px) {
+  .situationItem {
+    gap: var(--spacing-xl);
+    padding: var(--spacing-xl) 0;
+  }
+  
+  .situationNumber {
+    font-size: 2rem;
+  }
+  
+  .situationText {
+    font-size: 1.375rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  /* Asymmetric layout on desktop */
+  .situationsGrid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    column-gap: var(--spacing-xxl);
+    row-gap: 0;
+    border-top: 1px solid var(--color-border);
+    border-bottom: 1px solid var(--color-border);
+    padding: var(--spacing-lg) 0;
+  }
+
+  .situationItem {
+    border: none;
+    border-top: none;
+    border-bottom: none;
+    padding: var(--spacing-lg) 0;
+  }
+  
+  .situationItem:last-child {
+    border-bottom: none;
+  }
+  
+  /* Add subtle vertical divider in the middle */
+  .situationItem:nth-child(even) {
+    position: relative;
+  }
+  
+  .situationItem:nth-child(even)::before {
+    content: '';
+    position: absolute;
+    left: calc(var(--spacing-xxl) * -0.5);
+    top: var(--spacing-lg);
+    bottom: var(--spacing-lg);
+    width: 1px;
+    background-color: var(--color-border);
+  }
+  
+  .closingBlock {
+    align-items: flex-end;
+    text-align: right;
+  }
+}
+
+@media (min-width: 1280px) {
+  .situationsGrid {
+    column-gap: 8rem;
+  }
+  
+  .situationItem:nth-child(even)::before {
+    left: -4rem;
+  }
+}

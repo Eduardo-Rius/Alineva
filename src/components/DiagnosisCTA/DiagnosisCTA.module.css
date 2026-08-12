@@ -1,0 +1,196 @@
+.section {
+  background-color: var(--color-background); /* Warm Ivory */
+  padding-top: var(--spacing-xxl);
+  padding-bottom: var(--spacing-xxl);
+  border-top: 1px solid var(--color-border);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--spacing-xl);
+  background-color: var(--color-white); /* Slightly lighter card feel */
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-lg);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.03);
+}
+
+.contentCol {
+  display: flex;
+  flex-direction: column;
+}
+
+.eyebrow {
+  font-family: var(--font-body);
+  font-size: clamp(0.65rem, 1.8vw, 0.75rem);
+  font-weight: 600;
+  letter-spacing: clamp(1px, 2vw, 2px);
+  color: var(--color-secondary-green);
+  margin-bottom: var(--spacing-sm);
+}
+
+.title {
+  font-family: var(--font-heading);
+  font-size: clamp(2rem, 5vw, 2.5rem);
+  color: var(--color-primary-green);
+  line-height: 1.1;
+  margin-bottom: var(--spacing-md);
+}
+
+.bodyText {
+  font-family: var(--font-body);
+  font-size: 1rem;
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+  margin-bottom: var(--spacing-sm);
+}
+
+.bodyText:last-of-type {
+  margin-bottom: var(--spacing-lg);
+}
+
+.benefitsList {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 var(--spacing-lg) 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.benefitItem {
+  font-family: var(--font-body);
+  font-size: 0.9375rem;
+  color: var(--color-primary-green);
+  font-weight: 500;
+  position: relative;
+  padding-left: 24px;
+}
+
+.benefitItem::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 6px;
+  width: 12px;
+  height: 12px;
+  background-color: rgba(212, 122, 50, 0.2);
+  border: 1px solid var(--color-accent-orange);
+  border-radius: 50%;
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-sm);
+  width: 100%;
+}
+
+.primaryCta {
+  background-color: var(--color-primary-green);
+  color: var(--color-white);
+  padding: 16px 24px;
+  border-radius: var(--radius-sm);
+  font-weight: 500;
+  text-align: center;
+  transition: background-color var(--transition-fast);
+  text-decoration: none;
+  width: 100%;
+}
+
+.primaryCta:hover {
+  background-color: var(--color-secondary-green);
+}
+
+.secondaryCta {
+  background-color: transparent;
+  color: var(--color-text-secondary);
+  padding: 16px 24px;
+  border-radius: var(--radius-sm);
+  font-weight: 500;
+  text-align: center;
+  transition: color var(--transition-fast);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  width: 100%;
+}
+
+.secondaryCta:hover {
+  color: var(--color-primary-green);
+}
+
+.microcopy {
+  font-family: var(--font-body);
+  font-size: 0.8125rem;
+  color: var(--color-text-secondary);
+  opacity: 0.8;
+  text-align: center;
+}
+
+.visualCol {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.calendarPlaceholder {
+  width: 100%;
+  aspect-ratio: 1;
+  background-color: var(--color-background);
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-lg);
+}
+
+.calendarInner {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.calendarText {
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+
+.calendarSubtext {
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+  opacity: 0.6;
+}
+
+@media (min-width: 768px) {
+  .actions {
+    flex-direction: row;
+    align-items: center;
+  }
+  
+  .primaryCta, .secondaryCta {
+    width: auto;
+  }
+
+  .microcopy {
+    text-align: left;
+    margin-left: 12px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .grid {
+    grid-template-columns: 1fr 1fr;
+    gap: clamp(4rem, 6vw, 6rem);
+    padding: var(--spacing-xxl);
+  }
+
+  .calendarPlaceholder {
+    aspect-ratio: 4/3;
+  }
+}
