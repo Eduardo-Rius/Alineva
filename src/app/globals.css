@@ -1,73 +1,93 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Inter:wght@400;500;600&display=swap');
-
 :root {
-  /* Colors */
-  --color-primary-green: #003C32;
-  --color-secondary-green: #06483C;
-  --color-accent-orange: #D47A32;
-  --color-accent-gold: #B97A29;
-  --color-bg-ivory: #F7F3EC;
-  --color-bg-beige: #EEE6DB;
+  /* Official Brand Colors */
+  --color-green-deep: #082C23;
+  --color-green-surface: #0F3E33;
+  --color-copper: #B07632;
+  --color-copper-light: #C48A46;
+  --color-copper-dark: #966124;
   --color-white: #FFFFFF;
-  --color-text-primary: #202020;
-  --color-text-secondary: #555555;
-  --color-border: #D1C9BE;
-  
-  /* On-Dark Semantic Tokens */
-  --color-text-on-dark: var(--color-bg-ivory);
-  --color-text-muted-on-dark: rgba(247, 243, 236, 0.85);
-  --color-border-on-dark: rgba(247, 243, 236, 0.2);
-  --color-accent-on-dark: #E28D44; /* Slightly brighter orange for better contrast on dark green */
+  --color-bg-subtle: #FAF9F6;
+  --color-bg-warm: #F4F1EA;
 
-  /* Typography */
-  --font-display: var(--font-dm-serif), 'DM Serif Display', serif;
-  --font-body: var(--font-inter), 'Inter', sans-serif;
+  /* Typography Colors */
+  --color-text-primary: #15221E;
+  --color-text-secondary: #485650;
+  --color-text-muted: #6B7A74;
+  --color-border: #E4E0D8;
+  --color-border-subtle: #EFECE5;
 
-  /* Spacing */
+  /* On-Dark Semantics */
+  --color-text-on-dark: #FFFFFF;
+  --color-text-muted-on-dark: rgba(255, 255, 255, 0.82);
+  --color-border-on-dark: rgba(255, 255, 255, 0.16);
+  --color-accent-on-dark: #C88D4A;
+
+  /* Typography Stacks */
+  --font-heading: var(--font-montserrat), sans-serif;
+  --font-body: Aptos, "Segoe UI", Arial, sans-serif;
+
+  /* Spacing System */
+  --spacing-xxs: 0.25rem;
   --spacing-xs: 0.5rem;
   --spacing-sm: 1rem;
   --spacing-md: 1.5rem;
   --spacing-lg: 2rem;
   --spacing-xl: 3rem;
-  --spacing-xxl: clamp(4rem, 8vw, 6rem);
-  --section-space: clamp(4rem, 10vw, 8rem);
-  --content-gap: clamp(2rem, 5vw, 4rem);
+  --spacing-xxl: clamp(3.5rem, 6vw, 5.5rem);
+  --section-space: clamp(4.5rem, 8vw, 7.5rem);
+  --content-gap: clamp(1.5rem, 4vw, 3rem);
 
   /* Containers */
   --container-max: 1200px;
-  --container-wide: 1440px;
-  
-  /* Radii */
+  --container-wide: 1320px;
+
+  /* Radii - Subtle & Institutional */
+  --radius-xs: 2px;
   --radius-sm: 4px;
   --radius-md: 8px;
-  --radius-lg: 16px;
-  
+  --radius-lg: 12px;
+
   /* Transitions */
-  --transition-fast: 0.2s ease-out;
-  --transition-standard: 0.3s ease-in-out;
+  --transition-fast: 0.2s ease;
+  --transition-standard: 0.25s ease-in-out;
 }
 
-/* Reset & Base Styles */
-* {
+/* Reset & Box Sizing */
+*, *::before, *::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
 }
 
-html, body {
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 84px;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  width: 100%;
   max-width: 100vw;
   overflow-x: hidden;
-  background-color: var(--color-bg-ivory);
+  background-color: var(--color-white);
   color: var(--color-text-primary);
   font-family: var(--font-body);
-  line-height: 1.6;
+  font-size: 1rem;
+  line-height: 1.65;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* Media defaults */
+img, picture, video, canvas, svg {
+  display: block;
+  max-width: 100%;
 }
 
 a {
   color: inherit;
   text-decoration: none;
+  transition: color var(--transition-fast);
 }
 
 button {
@@ -81,70 +101,195 @@ ul, ol {
   list-style: none;
 }
 
+/* Headings Typography */
 h1, h2, h3, h4, h5, h6 {
-  font-family: var(--font-display);
-  font-weight: 400; /* DM Serif Display is typically 400 */
-  line-height: 1.1;
+  font-family: var(--font-heading);
   color: var(--color-text-primary);
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.015em;
 }
 
 h1 {
-  font-size: clamp(2.5rem, 6vw, 4.5rem);
+  font-size: clamp(2.35rem, 5.2vw, 3.75rem);
+  font-weight: 700;
+  line-height: 1.15;
 }
 
 h2 {
-  font-size: clamp(2rem, 4vw, 3rem);
+  font-size: clamp(1.85rem, 3.8vw, 2.75rem);
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+h3 {
+  font-size: clamp(1.25rem, 2.2vw, 1.5rem);
+  font-weight: 600;
+  line-height: 1.3;
 }
 
 p {
-  font-size: clamp(1rem, 1.2vw, 1.125rem);
+  font-family: var(--font-body);
+  font-size: clamp(1rem, 1.1vw, 1.125rem);
   color: var(--color-text-secondary);
+  line-height: 1.65;
 }
 
-/* Accessibility: skip to content */
+/* Eyebrows / Overlines */
+.eyebrow {
+  display: inline-block;
+  font-family: var(--font-heading);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-copper-dark);
+  margin-bottom: 0.75rem;
+}
+
+/* Accessibility: Skip Link */
 .skip-to-content {
   position: absolute;
-  top: -100px;
-  left: 0;
-  background: var(--color-primary-green);
+  top: -120px;
+  left: 1rem;
+  background: var(--color-green-deep);
   color: var(--color-white);
-  padding: 8px 16px;
-  z-index: 9999;
-  transition: top 0.2s;
+  padding: 0.75rem 1.5rem;
+  font-family: var(--font-heading);
+  font-size: 0.875rem;
+  font-weight: 600;
+  z-index: 10000;
+  border-radius: var(--radius-sm);
+  transition: top var(--transition-fast);
 }
 
 .skip-to-content:focus {
-  top: 0;
+  top: 1rem;
 }
 
-/* Accessibility: focus state */
+/* Accessibility: Focus Visible */
 *:focus-visible {
-  outline: 2px solid var(--color-accent-orange);
-  outline-offset: 4px;
+  outline: 2px solid var(--color-copper);
+  outline-offset: 3px;
 }
 
-/* Minimum touch targets */
+/* Minimum Touch Target for interactive controls */
 button, a {
   min-height: 44px;
-  min-width: 44px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
 }
 
-/* Layout utilities */
+/* Shared Button Styles */
+.btn {
+  font-family: var(--font-heading);
+  font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 0.875rem 1.75rem;
+  border-radius: var(--radius-sm);
+  transition: background-color var(--transition-fast), color var(--transition-fast), border-color var(--transition-fast), transform var(--transition-fast);
+  cursor: pointer;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.btn-primary {
+  background-color: var(--color-green-deep);
+  color: var(--color-white);
+  border: 1px solid var(--color-green-deep);
+}
+
+.btn-primary:hover {
+  background-color: var(--color-green-surface);
+  border-color: var(--color-green-surface);
+  color: var(--color-white);
+}
+
+.btn-secondary {
+  background-color: transparent;
+  color: var(--color-green-deep);
+  border: 1.5px solid var(--color-green-deep);
+}
+
+.btn-secondary:hover {
+  background-color: rgba(8, 44, 35, 0.04);
+}
+
+.btn-copper {
+  background-color: var(--color-copper-dark);
+  color: var(--color-white);
+  border: 1px solid var(--color-copper-dark);
+}
+
+.btn-copper:hover {
+  background-color: #7d4f1c;
+  border-color: #7d4f1c;
+  color: var(--color-white);
+}
+
+.btn-on-dark-primary {
+  background-color: var(--color-white);
+  color: var(--color-green-deep);
+  border: 1px solid var(--color-white);
+}
+
+.btn-on-dark-primary:hover {
+  background-color: rgba(255, 255, 255, 0.92);
+  border-color: rgba(255, 255, 255, 0.92);
+  color: var(--color-green-deep);
+}
+
+.btn-on-dark-secondary {
+  background-color: transparent;
+  color: var(--color-white);
+  border: 1.5px solid rgba(255, 255, 255, 0.4);
+}
+
+.btn-on-dark-secondary:hover {
+  border-color: var(--color-white);
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+/* Layout Utilities */
 .container {
   width: 100%;
   max-width: var(--container-max);
-  margin: 0 auto;
-  padding: 0 var(--spacing-lg);
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: clamp(1.25rem, 4vw, 2.5rem);
+  padding-right: clamp(1.25rem, 4vw, 2.5rem);
 }
 
 .section {
-  padding: var(--section-space) 0;
-  scroll-margin-top: 90px; /* Accounts for fixed header */
+  padding-top: var(--section-space);
+  padding-bottom: var(--section-space);
+  position: relative;
+  scroll-margin-top: 84px;
 }
 
+.section-subtle {
+  background-color: var(--color-bg-subtle);
+}
+
+.section-dark {
+  background-color: var(--color-green-deep);
+  color: var(--color-text-on-dark);
+}
+
+.section-dark h1,
+.section-dark h2,
+.section-dark h3 {
+  color: var(--color-text-on-dark);
+}
+
+.section-dark p {
+  color: var(--color-text-muted-on-dark);
+}
+
+/* Reduced Motion */
 @media (prefers-reduced-motion: reduce) {
   *, ::before, ::after {
     animation-delay: -1ms !important;

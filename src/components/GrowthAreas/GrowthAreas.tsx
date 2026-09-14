@@ -1,94 +1,110 @@
+import Image from "next/image";
 import styles from "./GrowthAreas.module.css";
 
-const areas = [
+const services = [
   {
     num: "01",
-    title: "Marketing y marca",
-    copy: "Te ayudamos a ordenar tu estrategia de marketing, fortalecer tu posicionamiento y construir una presencia más clara y consistente para tu negocio.",
-    capabilities: [
-      "Estrategia de marketing",
-      "Posicionamiento",
-      "Comunicación de marca",
-      "Contenidos",
-      "Campañas",
-      "Coordinación de proveedores creativos"
-    ]
+    title: "Estrategia y crecimiento",
+    capabilities: "Diagnóstico · Planeación · Estrategia comercial · Insights",
+    benefit: "Ordenar necesidades y definir prioridades.",
   },
   {
     num: "02",
-    title: "Ventas y desarrollo comercial",
-    copy: "Identificamos oportunidades para fortalecer tu proceso comercial, mejorar la forma en que presentas tu oferta y generar nuevas oportunidades de crecimiento.",
-    capabilities: [
-      "Estrategia comercial",
-      "Propuesta de valor",
-      "Desarrollo de canales",
-      "Materiales comerciales",
-      "Prospección",
-      "Seguimiento de oportunidades"
-    ]
+    title: "Marca y marketing",
+    capabilities: "Imagen corporativa · Branding · Campañas en redes sociales",
+    benefit: "Crear o fortalecer cómo se presenta tu marca.",
   },
   {
     num: "03",
-    title: "Ecommerce y canales digitales",
-    copy: "Te acompañamos a desarrollar, ordenar u optimizar tus canales digitales para que funcionen como una extensión real de tu negocio.",
-    capabilities: [
-      "Ecommerce",
-      "Marketplaces",
-      "Amazon",
-      "Catálogos digitales",
-      "Optimización comercial",
-      "Estrategias de canal"
-    ]
+    title: "Presencia digital",
+    capabilities: "Web · Landing pages · SEO · Google Business · Redes sociales",
+    benefit: "Construir presencia digital con propósito comercial.",
   },
   {
     num: "04",
-    title: "Coordinación e implementación",
-    copy: "Cuando el proyecto requiere especialistas, proveedores o diferentes disciplinas, Alineva coordina el proceso para que tengas claridad, seguimiento y un solo punto de contacto.",
-    capabilities: [
-      "Coordinación de especialistas",
-      "Seguimiento de proyectos",
-      "Implementación",
-      "Priorización",
-      "Control de avances",
-      "Evaluación de resultados"
-    ]
-  }
+    title: "Tecnología y automatización",
+    capabilities: "WhatsApp · Chatbots · Automatizaciones · IA · Plataformas",
+    benefit: "Hacer más eficiente la atención, el seguimiento y los procesos.",
+  },
+  {
+    num: "05",
+    title: "E-commerce y marketplaces",
+    capabilities: "Amazon · Marketplaces · Listings · Publicidad · Análisis",
+    benefit: "Mejorar visibilidad, operación y desempeño digital.",
+  },
+  {
+    num: "06",
+    title: "Ventas y experiencia",
+    capabilities: "Estrategia comercial · Procesos · Leads · Customer journey",
+    benefit: "Detectar oportunidades y mejorar el recorrido.",
+  },
+  {
+    num: "07",
+    title: "Experiencias y espacios",
+    capabilities: "Showrooms · POP · Exhibiciones · Interiorismo",
+    benefit: "Llevar la marca y su experiencia al espacio físico.",
+  },
+  {
+    num: "08",
+    title: "Legal y protección de marca",
+    capabilities: "Viabilidad · Protección · Registro IMPI · Acompañamiento",
+    benefit: "Proteger la marca antes y durante su construcción.",
+  },
+  {
+    num: "09",
+    title: "Capacitación y desarrollo",
+    capabilities: "Liderazgo · Productividad · Cultura · Desarrollo de equipos",
+    benefit: "Fortalecer líderes y equipos conforme crece la empresa.",
+  },
 ];
 
 export default function GrowthAreas() {
   return (
-    <section className={`section ${styles.section}`} id="servicios" aria-labelledby="growth-heading">
+    <section
+      className={`section ${styles.servicesSection}`}
+      id="servicios"
+      aria-labelledby="services-heading"
+    >
       <div className={`container ${styles.container}`}>
-        
         <header className={styles.header}>
-          <span className={styles.eyebrow} aria-hidden="true">ÁREAS DE CRECIMIENTO</span>
-          <h2 id="growth-heading" className={styles.title}>Qué podemos ayudarte a profesionalizar</h2>
+          <span className="eyebrow">¿EN QUÉ PODEMOS AYUDARTE?</span>
+          <h2 id="services-heading" className={styles.title}>
+            Soluciones a la medida de tu etapa
+          </h2>
           <p className={styles.intro}>
-            No todas las empresas necesitan lo mismo ni en el mismo momento. Por eso empezamos por entender dónde estás y qué necesita realmente tu negocio para avanzar.
+            Tenemos un abanico amplio de soluciones, pero integramos solo las que
+            hacen sentido para cada etapa.
           </p>
         </header>
 
-        <div className={styles.grid}>
-          {areas.map((area) => (
-            <div key={area.num} className={styles.card}>
-              <div className={styles.cardNumber} aria-hidden="true">{area.num}</div>
-              <h3 className={styles.cardTitle}>{area.title}</h3>
-              <p className={styles.cardCopy}>{area.copy}</p>
-              <ul className={styles.capabilitiesList}>
-                {area.capabilities.map((item, index) => (
-                  <li key={index} className={styles.capabilityItem}>{item}</li>
-                ))}
-              </ul>
-            </div>
+        {/* Visual pause photography banner */}
+        <div className={styles.visualPauseFrame}>
+          <Image
+            src="/images/alineva/servicios-estrategia.png"
+            alt="Sesión de estrategia y definición de prioridades de negocio en Alineva"
+            fill
+            className={styles.visualPauseImage}
+            sizes="(max-width: 768px) 100vw, 1200px"
+          />
+        </div>
+
+        {/* Editorial 2-column services list */}
+        <div className={styles.servicesList}>
+          {services.map((service) => (
+            <article key={service.num} className={styles.serviceItem}>
+              <div className={styles.serviceTop}>
+                <span className={styles.serviceNum} aria-hidden="true">
+                  {service.num}
+                </span>
+                <h3 className={styles.serviceTitle}>{service.title}</h3>
+              </div>
+              <p className={styles.serviceCapabilities}>
+                {service.capabilities}
+              </p>
+              <p className={styles.serviceBenefit}>{service.benefit}</p>
+            </article>
           ))}
         </div>
-
-        <div className={styles.bridgeNote}>
-          <p>
-            No trabajamos con paquetes genéricos. Definimos qué necesita cada empresa antes de recomendar una solución.
-          </p>
-        </div>
-
       </div>
     </section>
   );

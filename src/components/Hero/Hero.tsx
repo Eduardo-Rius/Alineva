@@ -1,54 +1,66 @@
 import Link from "next/link";
+import Image from "next/image";
 import styles from "./Hero.module.css";
 
 export default function Hero() {
   return (
-    <section className={styles.hero} aria-labelledby="hero-heading">
+    <section
+      className={styles.hero}
+      id="inicio"
+      aria-labelledby="hero-title"
+    >
       <div className={`container ${styles.heroContainer}`}>
-        
-        {/* Content Column */}
+        {/* Content Column (Left) */}
         <div className={styles.contentCol}>
-          <div className={styles.eyebrow} aria-hidden="true">
-            ESTRATEGIA &middot; ACOMPAÑAMIENTO &middot; EJECUCIÓN
-          </div>
-          
-          <h1 id="hero-heading" className={styles.title}>
-            Crecemos contigo, <span className={styles.highlight}>paso a paso.</span>
+          <span className="eyebrow">
+            ESTRATEGIA · ACOMPAÑAMIENTO · EJECUCIÓN
+          </span>
+
+          <h1 id="hero-title" className={styles.headline}>
+            Crecemos contigo,{" "}
+            <span className={styles.copperAccent}>paso a paso.</span>
           </h1>
-          
-          <p className={styles.description}>
-            Ayudamos a PyMEs y negocios en crecimiento a ordenar prioridades, profesionalizar áreas clave y convertir sus necesidades en soluciones prácticas para seguir avanzando.
+
+          <p className={styles.bajada}>
+            Estrategia, acompañamiento y los especialistas adecuados para cada
+            etapa de tu negocio.
           </p>
-          
+
+          <p className={styles.bodyText}>
+            Entendemos primero tu negocio, ayudamos a ordenar prioridades y
+            encontramos la mejor manera de llevarlas a la práctica.
+          </p>
+
           <div className={styles.actions}>
-            <Link href="#diagnostico" className={styles.primaryCta}>
-              Agenda una reunión de diagnóstico
+            <Link href="#contacto" className={`btn btn-primary ${styles.ctaPrimary}`}>
+              PLATIQUEMOS
             </Link>
-            <Link href="#metodologia" className={styles.secondaryCta}>
-              Conoce cómo trabajamos
+            <Link
+              href="#como-trabajamos"
+              className={`btn btn-secondary ${styles.ctaSecondary}`}
+            >
+              CONOCE CÓMO TRABAJAMOS
             </Link>
           </div>
-          
-          <p className={styles.supportText}>
-            Estrategia, acompañamiento y soluciones a la medida de tu negocio.
+
+          <p className={styles.microcopy}>
+            Sin paquetes genéricos. Sin presión.
           </p>
         </div>
 
-        {/* Image Column */}
-        <div className={styles.imageCol}>
-          <div className={styles.imageWrapper}>
-            {/* 
-              TODO: Replace with actual Image when available. 
-              Currently using a semantic placeholder with the correct aspect ratio.
-            */}
-            <div className={styles.imagePlaceholder} aria-label="Fotografía de equipo de consultoría trabajando paso a paso">
-              <span className={styles.placeholderText}>[EDITORIAL PLACEHOLDER]</span>
-            </div>
+        {/* Photography Column (Right) */}
+        <div className={styles.mediaCol}>
+          <div className={styles.imageFrame}>
+            <Image
+              src="/images/alineva/hero-fundadoras.png"
+              alt="Emma Alvarado y Yuriko Peña, fundadoras de Alineva, en sesión de trabajo estratégico"
+              fill
+              priority
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 48vw, 560px"
+              className={styles.heroImage}
+            />
           </div>
-          {/* Decorative Arc Element */}
-          <div className={styles.decorativeArc} aria-hidden="true"></div>
         </div>
-
       </div>
     </section>
   );

@@ -1,161 +1,170 @@
-.section {
-  background-color: var(--color-bg-beige); /* Warm Beige */
-  padding-top: var(--spacing-xxl);
-  padding-bottom: var(--spacing-xxl);
+.aboutSection {
+  background-color: var(--color-white);
+  border-bottom: 1px solid var(--color-border-subtle);
 }
 
-.grid {
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(2.5rem, 5vw, 4rem);
+}
+
+.header {
+  max-width: 840px;
+}
+
+.headline {
+  margin-bottom: 1.25rem;
+  color: var(--color-green-deep);
+}
+
+.introParagraphs {
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+}
+
+.introParagraphs p {
+  font-size: clamp(1.0625rem, 1.25vw, 1.1875rem);
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+}
+
+/* Joint Opening Photo */
+.jointPhotoFrame {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 7;
+  max-height: 420px;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(8, 44, 35, 0.05);
+}
+
+.jointPhotoImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 25%;
+}
+
+/* Profiles Grid */
+.profilesGrid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: var(--spacing-xl);
+  gap: clamp(2.5rem, 5vw, 4rem);
 }
 
-.visualCol {
+@media (min-width: 860px) {
+  .profilesGrid {
+    grid-template-columns: 1fr 1fr;
+    gap: 3rem;
+  }
+}
+
+.profileCard {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-md);
-  order: 2; /* On mobile, text first */
+  gap: 1.5rem;
 }
 
-.imagePlaceholder {
+.portraitWrapper {
+  position: relative;
   width: 100%;
-  aspect-ratio: 4 / 5;
-  background-color: rgba(0, 60, 50, 0.05); /* Tinted background */
-  border: 1px dashed var(--color-border);
+  aspect-ratio: 4 / 4.8;
   border-radius: var(--radius-md);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 16px rgba(8, 44, 35, 0.06);
+  background-color: var(--color-bg-subtle);
 }
 
-.placeholderText {
-  font-family: var(--font-body);
+.portraitImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 18%;
+}
+
+.portraitImageYuriko {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 55% 4%;
+}
+
+@media (max-width: 640px) {
+  .portraitWrapper {
+    aspect-ratio: 4 / 4.6;
+    max-height: 440px;
+  }
+
+  .portraitImageYuriko {
+    object-position: 54% 2%;
+  }
+}
+
+.profileContent {
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+}
+
+.founderName {
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--color-green-deep);
+}
+
+.founderTerritories {
+  font-family: var(--font-heading);
   font-size: 0.875rem;
   font-weight: 600;
-  color: var(--color-text-secondary);
-  letter-spacing: 1px;
+  letter-spacing: 0.04em;
+  color: var(--color-copper-dark);
 }
 
-.placeholderSubtext {
-  font-family: var(--font-body);
-  font-size: 0.75rem;
-  color: var(--color-text-secondary);
-  opacity: 0.7;
-}
-
-.conceptBox {
-  background-color: var(--color-white);
-  padding: var(--spacing-lg);
-  border-radius: var(--radius-sm);
-  border-left: 3px solid var(--color-accent-orange);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
-}
-
-.conceptText {
-  font-family: var(--font-body);
-  font-size: clamp(1.125rem, 2vw, 1.25rem);
-  color: var(--color-primary-green);
-  line-height: 1.4;
-  margin: 0;
-}
-
-.conceptText strong {
-  font-weight: 600;
-}
-
-.contentCol {
-  display: flex;
-  flex-direction: column;
-  order: 1; /* On mobile, text first */
-}
-
-.eyebrow {
-  display: block;
-  font-family: var(--font-body);
-  font-size: clamp(0.65rem, 1.8vw, 0.75rem);
-  font-weight: 600;
-  letter-spacing: clamp(1px, 2vw, 2px);
-  color: var(--color-secondary-green);
-  margin-bottom: var(--spacing-sm);
-}
-
-.title {
-  font-family: var(--font-heading);
-  font-size: clamp(2rem, 4vw, 3rem);
-  color: var(--color-primary-green);
-  line-height: 1.1;
-  margin-bottom: var(--spacing-md);
-}
-
-.introBlock {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-sm);
-  margin-bottom: var(--spacing-lg);
-}
-
-.bodyText {
-  font-family: var(--font-body);
-  font-size: clamp(1.0625rem, 1.5vw, 1.1875rem);
-  color: var(--color-text-secondary);
-  line-height: 1.6;
-}
-
-.modelList {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  margin-bottom: var(--spacing-lg);
-  padding-left: 0;
-}
-
-.modelItem {
-  font-family: var(--font-body);
+.founderBio {
   font-size: 1rem;
-  color: var(--color-primary-green);
-  font-weight: 500;
-  position: relative;
-  padding-left: 20px;
-}
-
-.modelItem::before {
-  content: "→";
-  position: absolute;
-  left: 0;
-  color: var(--color-accent-orange);
-}
-
-.supportCopy {
-  font-family: var(--font-body);
-  font-size: 0.9375rem;
   color: var(--color-text-secondary);
   line-height: 1.6;
-  border-top: 1px solid var(--color-border);
-  padding-top: var(--spacing-md);
 }
 
-@media (min-width: 1024px) {
-  .grid {
-    grid-template-columns: 1fr 1fr;
-    gap: clamp(4rem, 8vw, 8rem);
-    align-items: center;
-  }
-  
-  .visualCol {
-    order: 1; /* Image left on desktop */
-  }
-  
-  .contentCol {
-    order: 2; /* Text right on desktop */
-    padding-right: var(--spacing-lg);
-  }
-  
-  .conceptBox {
-    margin-right: -40px; /* Slight overlap for editorial feel */
-    margin-top: -60px;
-    position: relative;
-    z-index: 2;
-  }
+.credentialsBlock {
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--color-border-subtle);
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.credentialsLabel {
+  font-family: var(--font-heading);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.credentialsList {
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+}
+
+/* Closing Note */
+.closingNote {
+  padding: 1.5rem 2rem;
+  background-color: var(--color-bg-subtle);
+  border-left: 3px solid var(--color-copper);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+}
+
+.closingCopy {
+  font-family: var(--font-heading);
+  font-size: clamp(1.0625rem, 1.25vw, 1.1875rem);
+  font-weight: 600;
+  color: var(--color-green-deep);
+  line-height: 1.5;
 }

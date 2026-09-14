@@ -1,12 +1,12 @@
 import Header from "@/components/Header/Header";
 import Hero from "@/components/Hero/Hero";
 import ForWhom from "@/components/ForWhom/ForWhom";
+import BrandOrigin from "@/components/BrandOrigin/BrandOrigin";
 import GrowthAreas from "@/components/GrowthAreas/GrowthAreas";
-import Differentiators from "@/components/Differentiators/Differentiators";
 import Methodology from "@/components/Methodology/Methodology";
-import DiagnosisCTA from "@/components/DiagnosisCTA/DiagnosisCTA";
+import AlliesModel from "@/components/AlliesModel/AlliesModel";
+import ConversationCTA from "@/components/ConversationCTA/ConversationCTA";
 import About from "@/components/About/About";
-import Experience from "@/components/Experience/Experience";
 import Contact from "@/components/Contact/Contact";
 import Footer from "@/components/Footer/Footer";
 
@@ -16,21 +16,40 @@ export default function Home() {
       <a href="#main-content" className="skip-to-content">
         Saltar al contenido principal
       </a>
-      
+
+      {/* 1. Header */}
       <Header />
-      
+
       <main id="main-content">
+        {/* 2. Hero */}
         <Hero />
+
+        {/* 3. ¿Para quién es Alineva? */}
         <ForWhom />
+
+        {/* 4. Origen y filosofía */}
+        <BrandOrigin />
+
+        {/* 5. ¿En qué podemos ayudarte? */}
         <GrowthAreas />
-        <Differentiators />
+
+        {/* 6. Nuestra forma de trabajar */}
         <Methodology />
-        <DiagnosisCTA />
+
+        {/* 7. Modelo de aliados */}
+        <AlliesModel />
+
+        {/* 8. Primer paso: una conversación */}
+        <ConversationCTA />
+
+        {/* 9. Nosotras */}
         <About />
-        <Experience />
+
+        {/* 10. Contacto */}
         <Contact />
       </main>
-      
+
+      {/* 11. Footer */}
       <Footer />
     </>
   );

@@ -1,57 +1,112 @@
+"use client";
+
+import { useCallback } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import styles from "./Footer.module.css";
 
 export default function Footer() {
-  const currentYear = new Date().getFullYear();
+  const handleLogoClick = useCallback(
+    (e: React.MouseEvent<HTMLAnchorElement>) => {
+      if (typeof window !== "undefined" && window.location.pathname === "/") {
+        e.preventDefault();
+
+        if (window.location.hash !== "#inicio") {
+          window.history.pushState(null, "", "/#inicio");
+        }
+
+        const target = document.getElementById("inicio");
+        if (target) {
+          target.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+    },
+    []
+  );
 
   return (
     <footer className={styles.footer} role="contentinfo">
       <div className={`container ${styles.footerContainer}`}>
-        
         <div className={styles.topSection}>
+          {/* Brand Column */}
           <div className={styles.brandCol}>
-            <Link href="/" className={styles.logo} aria-label="Alineva Home">
-              {/* [CONTENT PENDING] Official Logo */}
-              ALINEVA
+            <Link
+              href="/#inicio"
+              className={styles.logoLink}
+              aria-label="Ir al inicio de Alineva"
+              onClick={handleLogoClick}
+            >
+              <Image
+                src="/brand/Alineva_Logo_Principal_Fondo_Oscuro.svg"
+                alt="Alineva"
+                width={125}
+                height={97}
+                className={styles.logoImage}
+              />
             </Link>
-            <p className={styles.brandDescription}>
-              Alineva acompaña a PyMEs y negocios en crecimiento con estrategia, marketing, ecommerce y soluciones prácticas para avanzar con mayor claridad.
+            <p className={styles.brandDescriptor}>
+              Estrategia, acompañamiento y los especialistas adecuados para cada
+              etapa de tu negocio.
             </p>
           </div>
-          
+
+          {/* Navigation Column */}
           <div className={styles.linksCol}>
             <h3 className={styles.linksTitle}>Explora</h3>
             <ul className={styles.linksList}>
-              <li><Link href="#servicios" className={styles.link}>Servicios</Link></li>
-              <li><Link href="#metodologia" className={styles.link}>Metodología</Link></li>
-              <li><Link href="#nosotros" className={styles.link}>Nosotros</Link></li>
+              <li>
+                <Link href="#servicios" className={styles.link}>
+                  Servicios
+                </Link>
+              </li>
+              <li>
+                <Link href="#como-trabajamos" className={styles.link}>
+                  Cómo trabajamos
+                </Link>
+              </li>
+              <li>
+                <Link href="#nosotras" className={styles.link}>
+                  Nosotras
+                </Link>
+              </li>
+              <li>
+                <Link href="#contacto" className={styles.link}>
+                  Contacto
+                </Link>
+              </li>
             </ul>
           </div>
 
+          {/* Contact Column */}
           <div className={styles.linksCol}>
             <h3 className={styles.linksTitle}>Contacto</h3>
             <ul className={styles.linksList}>
-              <li><Link href="#diagnostico" className={styles.link}>Agenda un diagnóstico</Link></li>
-              <li><Link href="#contacto" className={styles.link}>Contacto</Link></li>
+              <li>
+                <Link href="#contacto" className={styles.link}>
+                  Agenda una llamada
+                </Link>
+              </li>
+              {/* WhatsApp se integrará una vez disponible el número oficial */}
             </ul>
+          </div>
+
+          {/* Closing Brand Philosophy */}
+          <div className={styles.philosophyCol}>
+            <p className={styles.philosophyAlineva}>
+              Alinear para evolucionar.
+            </p>
+            <p className={styles.philosophyTagline}>
+              Claridad para decidir. Acompañamiento para avanzar.
+            </p>
           </div>
         </div>
 
         <div className={styles.bottomSection}>
           <p className={styles.copyright}>
-            &copy; {currentYear} Alineva. Todos los derechos reservados.
+            &copy; 2026 Alineva. Todos los derechos reservados.
           </p>
-          
-          {/* [CONTENT PENDING] Social & Privacy URLs */}
-          {/* 
-          <div className={styles.legalLinks}>
-            <Link href="#" className={styles.legalLink}>Aviso de Privacidad</Link>
-            <a href="#" className={styles.legalLink} target="_blank" rel="noopener noreferrer">LinkedIn</a>
-            <a href="#" className={styles.legalLink} target="_blank" rel="noopener noreferrer">Instagram</a>
-          </div> 
-          */}
         </div>
-
       </div>
     </footer>
   );
