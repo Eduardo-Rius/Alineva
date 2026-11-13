@@ -56,7 +56,8 @@ export default function Hero() {
               alt="Emma Alvarado y Yuriko Peña, fundadoras de Alineva, en sesión de trabajo estratégico"
               fill
               priority
-              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 48vw, 560px"
+              quality={90}
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 750px"
               className={styles.heroImage}
             />
           </div>
