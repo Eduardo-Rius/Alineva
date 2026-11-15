@@ -272,7 +272,7 @@ export default function Contact() {
                 )}
               </div>
 
-              {/* Espacio lógico para consentimiento sin enlaces legales falsos */}
+              {/* Espacio para consentimiento informado con enlace al Aviso de Privacidad */}
               <div className={styles.privacyGroup}>
                 <label htmlFor="contact-privacy" className={styles.checkboxLabel}>
                   <input
@@ -287,7 +287,18 @@ export default function Contact() {
                     aria-describedby={errors.privacy ? "privacy-error" : undefined}
                   />
                   <span className={styles.checkboxText}>
-                    Acepto el tratamiento de mis datos de contacto exclusivamente
+                    He leído el{" "}
+                    <a
+                      href="/legal/aviso-de-privacidad-alineva.pdf"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={styles.privacyLink}
+                      aria-label="Abrir Aviso de Privacidad Integral de Alineva en una nueva pestaña"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      Aviso de Privacidad
+                    </a>{" "}
+                    y acepto el tratamiento de mis datos de contacto exclusivamente
                     para dar respuesta a esta solicitud.
                   </span>
                 </label>

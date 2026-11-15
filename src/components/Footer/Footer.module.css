@@ -125,9 +125,32 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
 }
 
 .copyright {
   font-size: 0.8125rem;
   color: rgba(255, 255, 255, 0.6);
+}
+
+.legalLink {
+  font-size: 0.8125rem;
+  color: rgba(255, 255, 255, 0.75);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  transition: color var(--transition-fast);
+  padding: 4px 0;
+  display: inline-flex;
+  align-items: center;
+}
+
+.legalLink:hover {
+  color: var(--color-white);
+}
+
+.legalLink:focus-visible {
+  outline: 2px solid var(--color-accent-on-dark);
+  outline-offset: 3px;
+  border-radius: var(--radius-xs);
 }

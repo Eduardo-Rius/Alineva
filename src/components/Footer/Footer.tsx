@@ -106,6 +106,15 @@ export default function Footer() {
           <p className={styles.copyright}>
             &copy; 2026 Alineva. Todos los derechos reservados.
           </p>
+          <a
+            href="/legal/aviso-de-privacidad-alineva.pdf"
+            target="_blank"
+            rel="noopener noreferrer"
+            className={styles.legalLink}
+            aria-label="Abrir Aviso de Privacidad Integral de Alineva en una nueva pestaña"
+          >
+            Aviso de Privacidad
+          </a>
         </div>
       </div>
     </footer>
