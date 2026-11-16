@@ -4,8 +4,15 @@
  * Protocolo: SR-ALINEVA-HUBSPOT-01D
  */
 
-import { getHubSpotConfig, INSTITUTIONAL_LEGAL_METADATA } from "./config";
+import {
+  getHubSpotConfig,
+  INSTITUTIONAL_LEGAL_METADATA,
+  formatDateInAlinevaTimeZone,
+  ALINEVA_TIME_ZONE,
+} from "./config";
 import { SanitizedLeadData } from "./types";
+
+export { formatDateInAlinevaTimeZone, ALINEVA_TIME_ZONE };
 
 export interface UpsertResult {
   ok: boolean;
@@ -44,16 +51,23 @@ export class HubSpotClient {
 
   /**
    * Prepara el mapa de propiedades de HubSpot con los metadatos institucionales del servidor.
-   * Maneja diferenciación estricta entre Date picker (YYYY-MM-DD) y Date and time picker (timestamp ms).
+   * Maneja diferenciación estricta entre Date picker (YYYY-MM-DD en America/Mexico_City)
+   * y Date and time picker (timestamp ms).
+   * Tanto la fecha de calendario como el timestamp provienen de una única instancia de consentimiento.
    */
-  public buildProperties(lead: SanitizedLeadData): {
+  public buildProperties(
+    lead: SanitizedLeadData,
+    customConsentDate?: Date
+  ): {
     properties: Record<string, string>;
     internalTimestampUtc: string;
+    localConsentDate: string;
   } {
-    const now = new Date();
-    const internalTimestampUtc = now.toISOString();
+    const consentedAt = customConsentDate || new Date();
+    const internalTimestampUtc = consentedAt.toISOString();
     // 1. Date picker en HubSpot: Requiere estrictamente formato de fecha sin hora (YYYY-MM-DD)
-    const isoDateOnly = internalTimestampUtc.split("T")[0];
+    // calculado según el calendario oficial de Ciudad de México (America/Mexico_City)
+    const localConsentDate = formatDateInAlinevaTimeZone(consentedAt);
     const { properties } = this.config;
 
     const props: Record<string, string> = {
@@ -63,22 +77,23 @@ export class HubSpotClient {
       [properties.message]: lead.message,
       [properties.interest]: lead.interest,
       [properties.privacyConsent]: "true",
-      [properties.consentDate]: isoDateOnly,
+      [properties.consentDate]: localConsentDate,
       [properties.privacyVersion]: INSTITUTIONAL_LEGAL_METADATA.PRIVACY_VERSION,
       [properties.privacyHash]: INSTITUTIONAL_LEGAL_METADATA.PRIVACY_HASH,
       [properties.sourceChannel]: INSTITUTIONAL_LEGAL_METADATA.SOURCE_CHANNEL,
     };
 
     // 2. Date and time picker adicional: solo si la variable está explícitamente configurada
+    // Se calcula desde la misma instancia consentedAt sin pérdida de precisión
     if (properties.consentTimestamp && properties.consentTimestamp.trim() !== "") {
-      props[properties.consentTimestamp] = String(now.getTime());
+      props[properties.consentTimestamp] = String(consentedAt.getTime());
     }
 
     if (lead.phone) {
       props.phone = lead.phone;
     }
 
-    return { properties: props, internalTimestampUtc };
+    return { properties: props, internalTimestampUtc, localConsentDate };
   }
 
   /**

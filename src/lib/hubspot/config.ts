@@ -24,6 +24,32 @@ export const INSTITUTIONAL_LEGAL_METADATA = {
   PRIVACY_HASH: "7efdb995b4fba622a6a9850460a784f4a715e5798386329a002ffb8c7e0b34cc",
 } as const;
 
+export const ALINEVA_TIME_ZONE = "America/Mexico_City";
+
+/**
+ * Convierte una instancia de fecha al formato estricto YYYY-MM-DD
+ * correspondiente al calendario de Ciudad de México (America/Mexico_City).
+ * Utiliza Intl.DateTimeFormat para resolución IANA nativa sin offsets manuales.
+ */
+export function formatDateInAlinevaTimeZone(date: Date): string {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: ALINEVA_TIME_ZONE,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(date);
+
+  const year = parts.find((part) => part.type === "year")?.value;
+  const month = parts.find((part) => part.type === "month")?.value;
+  const day = parts.find((part) => part.type === "day")?.value;
+
+  if (!year || !month || !day) {
+    throw new Error("Unable to format consent date in Alineva time zone.");
+  }
+
+  return `${year}-${month}-${day}`;
+}
+
 export const DEFAULT_HUBSPOT_API_BASE_URL = "https://api.hubapi.com";
 export const DEFAULT_CONTACTS_API_VERSION = "2026-09";
 
