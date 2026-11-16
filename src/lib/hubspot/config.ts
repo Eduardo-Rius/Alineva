@@ -78,13 +78,27 @@ export function buildHubSpotEndpoints(
   };
 }
 
+/**
+ * Valida si un identificador de propietario de HubSpot tiene un formato válido y seguro.
+ * Permite únicamente cadenas alfanuméricas de 1 a 50 caracteres (incluyendo _ o -).
+ */
+export function isValidHubSpotOwnerId(ownerId: unknown): ownerId is string {
+  if (typeof ownerId !== "string") return false;
+  const trimmed = ownerId.trim();
+  if (trimmed.length === 0 || trimmed.length > 50) return false;
+  return /^[a-zA-Z0-9_-]+$/.test(trimmed);
+}
+
 export function getHubSpotConfig() {
   const apiUrl = process.env.HUBSPOT_API_URL || DEFAULT_HUBSPOT_API_BASE_URL;
   const apiVersion = process.env.HUBSPOT_CONTACTS_API_VERSION || DEFAULT_CONTACTS_API_VERSION;
+  const defaultOwnerIdRaw = process.env.HUBSPOT_DEFAULT_OWNER_ID?.trim() || "";
+  const defaultOwnerId = isValidHubSpotOwnerId(defaultOwnerIdRaw) ? defaultOwnerIdRaw : "";
 
   return {
     portalId: process.env.HUBSPOT_PORTAL_ID || "248017141",
     accessToken: process.env.HUBSPOT_ACCESS_TOKEN || "",
+    defaultOwnerId,
     apiUrl,
     apiVersion,
     endpoints: buildHubSpotEndpoints(apiUrl, apiVersion),
@@ -101,6 +115,7 @@ export function getHubSpotConfig() {
       privacyVersion: process.env.HUBSPOT_PROPERTY_PRIVACY_VERSION || "alineva_version_aviso_privacidad",
       privacyHash: process.env.HUBSPOT_PROPERTY_PRIVACY_HASH || "alineva_hash_aviso_privacidad",
       sourceChannel: process.env.HUBSPOT_PROPERTY_SOURCE_CHANNEL || "alineva_canal_origen",
+      ownerId: process.env.HUBSPOT_PROPERTY_OWNER_ID || "hubspot_owner_id",
     },
     timeoutMs: Number(process.env.HUBSPOT_TIMEOUT_MS) || 8000,
   };

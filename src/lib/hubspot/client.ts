@@ -9,10 +9,11 @@ import {
   INSTITUTIONAL_LEGAL_METADATA,
   formatDateInAlinevaTimeZone,
   ALINEVA_TIME_ZONE,
+  isValidHubSpotOwnerId,
 } from "./config";
 import { SanitizedLeadData } from "./types";
 
-export { formatDateInAlinevaTimeZone, ALINEVA_TIME_ZONE };
+export { formatDateInAlinevaTimeZone, ALINEVA_TIME_ZONE, isValidHubSpotOwnerId };
 
 export interface UpsertResult {
   ok: boolean;
@@ -204,6 +205,11 @@ export class HubSpotClient {
   ): Promise<UpsertResult> {
     const updateUrl = this.config.endpoints.update(contactId);
 
+    // Regla estricta: NUNCA enviar hubspot_owner_id en PATCH para no reasignar contactos existentes
+    const safeProperties = { ...properties };
+    delete safeProperties[this.config.properties.ownerId];
+    delete safeProperties.hubspot_owner_id;
+
     try {
       const updateResponse = await this.customFetch(updateUrl, {
         method: "PATCH",
@@ -211,7 +217,7 @@ export class HubSpotClient {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ properties }),
+        body: JSON.stringify({ properties: safeProperties }),
         signal,
       });
 
@@ -269,7 +275,8 @@ export class HubSpotClient {
     properties: Record<string, string>,
     email: string,
     token: string,
-    signal: AbortSignal
+    signal: AbortSignal,
+    updatePropertiesOnConflict?: Record<string, string>
   ): Promise<UpsertResult> {
     const createUrl = this.config.endpoints.create;
 
@@ -307,7 +314,9 @@ export class HubSpotClient {
             id?: string;
           } | null;
           if (lookupData?.id) {
-            return await this.updateContact(lookupData.id, properties, token, signal);
+            // Regla: En recuperación 409, el contacto se trata como existente y NUNCA se reasigna el propietario
+            const patchProperties = updatePropertiesOnConflict || properties;
+            return await this.updateContact(lookupData.id, patchProperties, token, signal);
           }
         }
 
@@ -394,7 +403,7 @@ export class HubSpotClient {
         };
       }
 
-      // Paso 2: Si existe, actualizar registro existente
+      // Paso 2: Si existe, actualizar registro existente (NUNCA incluir hubspot_owner_id)
       if (search.found && search.contactId) {
         const updateRes = await this.updateContact(
           search.contactId,
@@ -407,11 +416,18 @@ export class HubSpotClient {
       }
 
       // Paso 3: Si no existe, crear nuevo contacto
+      // Regla: Asignar hubspot_owner_id ÚNICAMENTE al crear y sólo si defaultOwnerId está configurado
+      const createProperties: Record<string, string> = { ...properties };
+      if (this.config.defaultOwnerId) {
+        createProperties[this.config.properties.ownerId] = this.config.defaultOwnerId;
+      }
+
       const createRes = await this.createContact(
-        properties,
+        createProperties,
         lead.email,
         token,
-        controller.signal
+        controller.signal,
+        properties // Propiedades limpias sin propietario para actualización en caso de carrera 409
       );
       clearTimeout(timeoutId);
       return { ...createRes, internalTimestampUtc };
