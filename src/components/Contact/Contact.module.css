@@ -206,6 +206,16 @@
   gap: 0.25rem;
 }
 
+.statusNoticeSuccess {
+  border-left-color: var(--color-green-deep);
+  background-color: #F0F6F4;
+}
+
+.statusNoticeError {
+  border-left-color: #B3261E;
+  background-color: #FDF2F2;
+}
+
 .statusTitle {
   font-family: var(--font-heading);
   font-size: 0.875rem;
@@ -213,8 +223,23 @@
   color: var(--color-green-deep);
 }
 
+.statusTitleError {
+  color: #B3261E;
+}
+
 .statusDetails {
   font-size: 0.8125rem;
   color: var(--color-text-secondary);
   line-height: 1.45;
+}
+
+.honeypot {
+  position: absolute;
+  left: -9999px;
+  top: -9999px;
+  opacity: 0;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+  pointer-events: none;
 }

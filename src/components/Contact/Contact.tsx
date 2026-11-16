@@ -23,6 +23,7 @@ interface FormErrors {
   interest?: string;
   message?: string;
   privacy?: string;
+  privacyConsent?: string;
 }
 
 export default function Contact() {
@@ -34,10 +35,18 @@ export default function Contact() {
     interest: "",
     message: "",
     privacy: false,
+    website: "",
   });
 
   const [errors, setErrors] = useState<FormErrors>({});
-  const [status, setStatus] = useState<"idle" | "loading" | "pending_backend" | "error">("idle");
+  const [status, setStatus] = useState<
+    | "idle"
+    | "submitting"
+    | "success"
+    | "validation_error"
+    | "service_unavailable"
+    | "server_error"
+  >("idle");
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
@@ -89,20 +98,65 @@ export default function Contact() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     if (!validate()) {
-      setStatus("error");
+      setStatus("validation_error");
       return;
     }
 
-    // Regla obligatoria: No simular un envío exitoso si no existe backend.
-    // La interfaz permanece lista y accesible, documentando con honestidad el estado técnico.
-    setStatus("loading");
-    setTimeout(() => {
-      setStatus("pending_backend");
-    }, 600);
+    setStatus("submitting");
+
+    try {
+      const response = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: formData.name,
+          company: formData.company,
+          email: formData.email,
+          phone: formData.phone || undefined,
+          interest: formData.interest,
+          message: formData.message,
+          privacyConsent: formData.privacy,
+          website: formData.website,
+        }),
+      });
+
+      const data = await response.json().catch(() => null);
+
+      if (response.status === 200 && data?.ok) {
+        setStatus("success");
+        setFormData({
+          name: "",
+          company: "",
+          email: "",
+          phone: "",
+          interest: "",
+          message: "",
+          privacy: false,
+          website: "",
+        });
+        setErrors({});
+        return;
+      }
+
+      if (response.status === 503 || data?.code === "SERVICE_UNCONFIGURED") {
+        setStatus("service_unavailable");
+        return;
+      }
+
+      if (response.status === 400 && data?.details) {
+        setStatus("validation_error");
+        setErrors(data.details);
+        return;
+      }
+
+      setStatus("server_error");
+    } catch {
+      setStatus("server_error");
+    }
   };
 
   return (
@@ -307,27 +361,71 @@ export default function Contact() {
                     {errors.privacy}
                   </span>
                 )}
+                {errors.privacyConsent && !errors.privacy && (
+                  <span id="privacy-error" className={styles.errorMessage} role="alert">
+                    {errors.privacyConsent}
+                  </span>
+                )}
+              </div>
+
+              {/* Honeypot invisible para detección de bots */}
+              <div className={styles.honeypot} aria-hidden="true">
+                <label htmlFor="contact-website">Website</label>
+                <input
+                  type="text"
+                  id="contact-website"
+                  name="website"
+                  value={formData.website}
+                  onChange={handleChange}
+                  tabIndex={-1}
+                  autoComplete="off"
+                />
               </div>
 
               <div className={styles.actions}>
                 <button
                   type="submit"
                   className={`btn btn-primary ${styles.submitButton}`}
-                  disabled={status === "loading"}
+                  disabled={status === "submitting"}
+                  aria-busy={status === "submitting"}
                 >
-                  {status === "loading" ? "ENVIANDO..." : "ENVIAR MENSAJE"}
+                  {status === "submitting" ? "ENVIANDO..." : "ENVIAR MENSAJE"}
                 </button>
 
-                {status === "pending_backend" && (
-                  <div className={styles.statusNotice} role="status">
-                    <p className={styles.statusTitle}>
-                      Formulario validado y preparado.
-                    </p>
-                    <p className={styles.statusDetails}>
-                      La integración del servicio de entrega de correos / backend oficial está pendiente de asignación de credenciales. No se simulan envíos falsos.
-                    </p>
-                  </div>
-                )}
+                <div aria-live="polite">
+                  {status === "service_unavailable" && (
+                    <div className={styles.statusNotice} role="status">
+                      <p className={styles.statusTitle}>
+                        Formulario validado y preparado.
+                      </p>
+                      <p className={styles.statusDetails}>
+                        El canal de entrega con HubSpot CRM aún no está activado con credenciales de producción. Tu solicitud ha sido validada localmente pero no ha sido enviada a CRM.
+                      </p>
+                    </div>
+                  )}
+
+                  {status === "success" && (
+                    <div className={`${styles.statusNotice} ${styles.statusNoticeSuccess}`} role="status">
+                      <p className={styles.statusTitle}>
+                        Mensaje recibido exitosamente.
+                      </p>
+                      <p className={styles.statusDetails}>
+                        Muchas gracias por contactarnos. Emma Alvarado y Yuriko Peña se comunicarán contigo a la brevedad.
+                      </p>
+                    </div>
+                  )}
+
+                  {status === "server_error" && (
+                    <div className={`${styles.statusNotice} ${styles.statusNoticeError}`} role="alert">
+                      <p className={`${styles.statusTitle} ${styles.statusTitleError}`}>
+                        No fue posible procesar tu solicitud.
+                      </p>
+                      <p className={styles.statusDetails}>
+                        En este momento no pudimos registrar tu mensaje en el sistema. Por favor intenta más tarde o escríbenos directamente a contacto@alineva.com.mx.
+                      </p>
+                    </div>
+                  )}
+                </div>
               </div>
             </form>
           </div>
