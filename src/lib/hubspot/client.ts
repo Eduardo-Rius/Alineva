@@ -15,6 +15,21 @@ import { SanitizedLeadData } from "./types";
 
 export { formatDateInAlinevaTimeZone, ALINEVA_TIME_ZONE, isValidHubSpotOwnerId };
 
+interface CachedOwnerEntry {
+  ownerId: string;
+  cachedAt: number;
+}
+
+const OWNER_CACHE_TTL_MS = 60 * 60 * 1000; // 1 hora de vigencia en memoria
+const ownerMemoryCache = new Map<string, CachedOwnerEntry>();
+
+/**
+ * Limpia la caché en memoria de propietarios (para aislamiento en pruebas unitarias).
+ */
+export function clearOwnerMemoryCache(): void {
+  ownerMemoryCache.clear();
+}
+
 export interface UpsertResult {
   ok: boolean;
   action?: "created" | "updated";
@@ -367,6 +382,98 @@ export class HubSpotClient {
   }
 
   /**
+   * Resuelve el identificador estructurado `id` de un propietario activo en HubSpot
+   * mediante su correo electrónico utilizando el endpoint oficial GET /crm/v3/owners?email=<email>.
+   * Implementa una caché en memoria para evitar consultas recurrentes en cada envío.
+   */
+  public async resolveOwnerIdByEmail(
+    email: string,
+    token: string,
+    signal?: AbortSignal
+  ): Promise<string | null> {
+    const normalizedEmail = email.trim().toLowerCase();
+    if (!normalizedEmail) return null;
+
+    // 1. Verificar si existe en la caché en memoria y sigue vigente
+    const cached = ownerMemoryCache.get(normalizedEmail);
+    if (cached && Date.now() - cached.cachedAt < OWNER_CACHE_TTL_MS) {
+      return cached.ownerId;
+    }
+
+    // 2. Consulta oficial a Owners API
+    const ownersUrl = this.config.endpoints.owners(normalizedEmail);
+    try {
+      const response = await this.customFetch(ownersUrl, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        signal,
+      });
+
+      if (!response.ok) {
+        console.warn(
+          `[HubSpot] No fue posible resolver el propietario en Owners API (código HTTP ${response.status}). Se procesará el contacto sin propietario.`
+        );
+        return null;
+      }
+
+      const data = (await response.json().catch(() => null)) as {
+        results?: Array<{
+          id?: unknown;
+          userId?: unknown;
+          email?: unknown;
+          archived?: unknown;
+        }>;
+      } | null;
+
+      if (!data || !Array.isArray(data.results) || data.results.length === 0) {
+        console.warn(
+          "[HubSpot] Owners API no devolvió resultados para la búsqueda de propietario configurada."
+        );
+        return null;
+      }
+
+      // Regla estricta: Extraer exclusivamente el campo estructurado `id` del propietario activo (no archivado).
+      // NO utilizar userId ni regex.
+      const activeOwner = data.results.find(
+        (o) =>
+          o.archived !== true &&
+          typeof o.id === "string" &&
+          isValidHubSpotOwnerId(o.id)
+      );
+
+      if (!activeOwner || typeof activeOwner.id !== "string") {
+        console.warn(
+          "[HubSpot] El usuario consultado en Owners API está archivado o no posee un ID de propietario válido."
+        );
+        return null;
+      }
+
+      const resolvedOwnerId = activeOwner.id.trim();
+
+      // Guardar en caché en memoria con límite de seguridad de 50 entradas
+      if (ownerMemoryCache.size >= 50) {
+        ownerMemoryCache.clear();
+      }
+      ownerMemoryCache.set(normalizedEmail, {
+        ownerId: resolvedOwnerId,
+        cachedAt: Date.now(),
+      });
+
+      return resolvedOwnerId;
+    } catch (err: unknown) {
+      if (err instanceof Error && err.name === "AbortError") {
+        console.warn("[HubSpot] Tiempo de espera agotado al consultar Owners API.");
+      } else {
+        console.warn("[HubSpot] Error de conexión al consultar Owners API.");
+      }
+      return null;
+    }
+  }
+
+  /**
    * Envía el prospecto a HubSpot CRM aplicando la estrategia Search-First.
    * 1. Normaliza correo y construye propiedades con trazabilidad interna UTC.
    * 2. Busca el contacto por correo vía Search API.
@@ -416,10 +523,18 @@ export class HubSpotClient {
       }
 
       // Paso 3: Si no existe, crear nuevo contacto
-      // Regla: Asignar hubspot_owner_id ÚNICAMENTE al crear y sólo si defaultOwnerId está configurado
+      // Regla: Asignar hubspot_owner_id ÚNICAMENTE al crear y sólo si se resuelve un propietario válido por correo
       const createProperties: Record<string, string> = { ...properties };
-      if (this.config.defaultOwnerId) {
-        createProperties[this.config.properties.ownerId] = this.config.defaultOwnerId;
+
+      if (this.config.defaultOwnerEmail) {
+        const resolvedOwnerId = await this.resolveOwnerIdByEmail(
+          this.config.defaultOwnerEmail,
+          token,
+          controller.signal
+        );
+        if (resolvedOwnerId && isValidHubSpotOwnerId(resolvedOwnerId)) {
+          createProperties[this.config.properties.ownerId] = resolvedOwnerId;
+        }
       }
 
       const createRes = await this.createContact(

@@ -59,6 +59,7 @@ export interface HubSpotEndpoints {
   getByIdProperty: (email: string) => string;
   update: (contactId: string) => string;
   properties: string;
+  owners: (email?: string) => string;
 }
 
 export function buildHubSpotEndpoints(
@@ -67,7 +68,7 @@ export function buildHubSpotEndpoints(
 ): HubSpotEndpoints {
   const cleanBase = baseUrl.replace(/\/+$/, "");
   return {
-    // Endpoints fechados oficiales 2026-09 exclusivamente
+    // Endpoints fechados oficiales 2026-09 exclusivamente para contactos
     search: `${cleanBase}/crm/objects/${apiVersion}/contacts/search`,
     create: `${cleanBase}/crm/objects/${apiVersion}/contacts`,
     getByIdProperty: (email: string) =>
@@ -75,6 +76,11 @@ export function buildHubSpotEndpoints(
     update: (contactId: string) =>
       `${cleanBase}/crm/objects/${apiVersion}/contacts/${encodeURIComponent(contactId)}`,
     properties: `${cleanBase}/crm/properties/${apiVersion}/contacts`,
+    // Endpoint oficial de consulta de propietarios
+    owners: (email?: string) => {
+      const query = email ? `?email=${encodeURIComponent(email)}` : "";
+      return `${cleanBase}/crm/v3/owners${query}`;
+    },
   };
 }
 
@@ -92,13 +98,12 @@ export function isValidHubSpotOwnerId(ownerId: unknown): ownerId is string {
 export function getHubSpotConfig() {
   const apiUrl = process.env.HUBSPOT_API_URL || DEFAULT_HUBSPOT_API_BASE_URL;
   const apiVersion = process.env.HUBSPOT_CONTACTS_API_VERSION || DEFAULT_CONTACTS_API_VERSION;
-  const defaultOwnerIdRaw = process.env.HUBSPOT_DEFAULT_OWNER_ID?.trim() || "";
-  const defaultOwnerId = isValidHubSpotOwnerId(defaultOwnerIdRaw) ? defaultOwnerIdRaw : "";
+  const defaultOwnerEmail = process.env.HUBSPOT_DEFAULT_OWNER_EMAIL?.trim().toLowerCase() || "";
 
   return {
     portalId: process.env.HUBSPOT_PORTAL_ID || "248017141",
     accessToken: process.env.HUBSPOT_ACCESS_TOKEN || "",
-    defaultOwnerId,
+    defaultOwnerEmail,
     apiUrl,
     apiVersion,
     endpoints: buildHubSpotEndpoints(apiUrl, apiVersion),
