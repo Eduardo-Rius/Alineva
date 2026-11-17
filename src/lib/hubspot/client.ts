@@ -87,17 +87,23 @@ export class HubSpotClient {
     const { properties } = this.config;
 
     const props: Record<string, string> = {
-      email: lead.email,
+      firstname: lead.firstName,
+      lastname: lead.lastName,
       company: lead.company,
-      [properties.fullName]: lead.name,
-      [properties.message]: lead.message,
+      email: lead.email,
+      lifecyclestage: "lead",
       [properties.interest]: lead.interest,
+      [properties.message]: lead.message,
       [properties.privacyConsent]: "true",
       [properties.consentDate]: localConsentDate,
       [properties.privacyVersion]: INSTITUTIONAL_LEGAL_METADATA.PRIVACY_VERSION,
       [properties.privacyHash]: INSTITUTIONAL_LEGAL_METADATA.PRIVACY_HASH,
       [properties.sourceChannel]: INSTITUTIONAL_LEGAL_METADATA.SOURCE_CHANNEL,
     };
+
+    if (properties.fullName && properties.fullName.trim() !== "") {
+      props[properties.fullName] = `${lead.firstName} ${lead.lastName}`.trim();
+    }
 
     // 2. Date and time picker adicional: solo si la variable está explícitamente configurada
     // Se calcula desde la misma instancia consentedAt sin pérdida de precisión

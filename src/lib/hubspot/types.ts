@@ -4,7 +4,8 @@
  */
 
 export interface ContactFormInput {
-  name: string;
+  firstName: string;
+  lastName: string;
   company: string;
   email: string;
   phone?: string;
@@ -15,7 +16,8 @@ export interface ContactFormInput {
 }
 
 export interface SanitizedLeadData {
-  name: string;
+  firstName: string;
+  lastName: string;
   company: string;
   email: string;
   phone?: string;

@@ -17,9 +17,11 @@ const interestOptions = [
 ];
 
 interface FormErrors {
-  name?: string;
+  firstName?: string;
+  lastName?: string;
   company?: string;
   email?: string;
+  phone?: string;
   interest?: string;
   message?: string;
   privacy?: string;
@@ -28,7 +30,8 @@ interface FormErrors {
 
 export default function Contact() {
   const [formData, setFormData] = useState({
-    name: "",
+    firstName: "",
+    lastName: "",
     company: "",
     email: "",
     phone: "",
@@ -68,8 +71,12 @@ export default function Contact() {
   const validate = (): boolean => {
     const newErrors: FormErrors = {};
 
-    if (!formData.name.trim()) {
-      newErrors.name = "Por favor ingresa tu nombre.";
+    if (!formData.firstName.trim()) {
+      newErrors.firstName = "Por favor ingresa tu nombre(s).";
+    }
+
+    if (!formData.lastName.trim()) {
+      newErrors.lastName = "Por favor ingresa tus apellidos.";
     }
 
     if (!formData.company.trim()) {
@@ -113,7 +120,8 @@ export default function Contact() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          name: formData.name,
+          firstName: formData.firstName,
+          lastName: formData.lastName,
           company: formData.company,
           email: formData.email,
           phone: formData.phone || undefined,
@@ -129,7 +137,8 @@ export default function Contact() {
       if (response.status === 200 && data?.ok) {
         setStatus("success");
         setFormData({
-          name: "",
+          firstName: "",
+          lastName: "",
           company: "",
           email: "",
           phone: "",
@@ -190,28 +199,53 @@ export default function Contact() {
             >
               <div className={styles.formRow}>
                 <div className={styles.inputGroup}>
-                  <label htmlFor="contact-name" className={styles.label}>
-                    Nombre <span className={styles.required}>*</span>
+                  <label htmlFor="contact-first-name" className={styles.label}>
+                    Nombre(s) <span className={styles.required}>*</span>
                   </label>
                   <input
                     type="text"
-                    id="contact-name"
-                    name="name"
-                    value={formData.name}
+                    id="contact-first-name"
+                    name="firstName"
+                    value={formData.firstName}
                     onChange={handleChange}
-                    className={`${styles.input} ${errors.name ? styles.inputError : ""}`}
+                    className={`${styles.input} ${errors.firstName ? styles.inputError : ""}`}
                     aria-required="true"
-                    aria-invalid={!!errors.name}
-                    aria-describedby={errors.name ? "name-error" : undefined}
-                    autoComplete="name"
+                    aria-invalid={!!errors.firstName}
+                    aria-describedby={errors.firstName ? "first-name-error" : undefined}
+                    autoComplete="given-name"
                   />
-                  {errors.name && (
-                    <span id="name-error" className={styles.errorMessage} role="alert">
-                      {errors.name}
+                  {errors.firstName && (
+                    <span id="first-name-error" className={styles.errorMessage} role="alert">
+                      {errors.firstName}
                     </span>
                   )}
                 </div>
 
+                <div className={styles.inputGroup}>
+                  <label htmlFor="contact-last-name" className={styles.label}>
+                    Apellidos <span className={styles.required}>*</span>
+                  </label>
+                  <input
+                    type="text"
+                    id="contact-last-name"
+                    name="lastName"
+                    value={formData.lastName}
+                    onChange={handleChange}
+                    className={`${styles.input} ${errors.lastName ? styles.inputError : ""}`}
+                    aria-required="true"
+                    aria-invalid={!!errors.lastName}
+                    aria-describedby={errors.lastName ? "last-name-error" : undefined}
+                    autoComplete="family-name"
+                  />
+                  {errors.lastName && (
+                    <span id="last-name-error" className={styles.errorMessage} role="alert">
+                      {errors.lastName}
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              <div className={styles.formRow}>
                 <div className={styles.inputGroup}>
                   <label htmlFor="contact-company" className={styles.label}>
                     Empresa <span className={styles.required}>*</span>
@@ -234,9 +268,7 @@ export default function Contact() {
                     </span>
                   )}
                 </div>
-              </div>
 
-              <div className={styles.formRow}>
                 <div className={styles.inputGroup}>
                   <label htmlFor="contact-email" className={styles.label}>
                     Correo electrónico <span className={styles.required}>*</span>
@@ -259,7 +291,9 @@ export default function Contact() {
                     </span>
                   )}
                 </div>
+              </div>
 
+              <div className={styles.formRow}>
                 <div className={styles.inputGroup}>
                   <label htmlFor="contact-phone" className={styles.label}>
                     Teléfono <span className={styles.optional}>(opcional)</span>
@@ -368,9 +402,45 @@ export default function Contact() {
                 )}
               </div>
 
-              {/* Honeypot invisible para detección de bots */}
-              <div className={styles.honeypot} aria-hidden="true">
-                <label htmlFor="contact-website">Website</label>
+              {/* Honeypot antirrobots: oculto para humanos y tecnologías de asistencia, accesible para bots */}
+              <div
+                className={styles.honeypot}
+                aria-hidden="true"
+                style={{
+                  position: "absolute",
+                  left: "-9999px",
+                  top: "-9999px",
+                  width: "1px",
+                  height: "1px",
+                  overflow: "hidden",
+                  opacity: 0,
+                  pointerEvents: "none",
+                  zIndex: -1000,
+                  margin: "-1px",
+                  padding: 0,
+                  border: 0,
+                  clip: "rect(0, 0, 0, 0)",
+                  clipPath: "inset(50%)",
+                }}
+              >
+                <label
+                  htmlFor="contact-website"
+                  className={styles.honeypotLabel}
+                  tabIndex={-1}
+                  aria-hidden="true"
+                  style={{
+                    position: "absolute",
+                    left: "-9999px",
+                    top: "-9999px",
+                    width: "1px",
+                    height: "1px",
+                    overflow: "hidden",
+                    opacity: 0,
+                    pointerEvents: "none",
+                  }}
+                >
+                  Website
+                </label>
                 <input
                   type="text"
                   id="contact-website"
@@ -379,6 +449,18 @@ export default function Contact() {
                   onChange={handleChange}
                   tabIndex={-1}
                   autoComplete="off"
+                  aria-hidden="true"
+                  className={styles.honeypotInput}
+                  style={{
+                    position: "absolute",
+                    left: "-9999px",
+                    top: "-9999px",
+                    width: "1px",
+                    height: "1px",
+                    overflow: "hidden",
+                    opacity: 0,
+                    pointerEvents: "none",
+                  }}
                 />
               </div>
 
