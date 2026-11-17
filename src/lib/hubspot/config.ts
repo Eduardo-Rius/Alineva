@@ -24,6 +24,9 @@ export const INSTITUTIONAL_LEGAL_METADATA = {
   PRIVACY_HASH: "7efdb995b4fba622a6a9850460a784f4a715e5798386329a002ffb8c7e0b34cc",
 } as const;
 
+export const DEFAULT_INITIAL_LEAD_STATUS = "NEW";
+export const HUBSPOT_PROPERTY_LEAD_STATUS = "hs_lead_status";
+
 export const ALINEVA_TIME_ZONE = "America/Mexico_City";
 
 /**
@@ -121,6 +124,7 @@ export function getHubSpotConfig() {
       privacyHash: process.env.HUBSPOT_PROPERTY_PRIVACY_HASH || "alineva_hash_aviso_privacidad",
       sourceChannel: process.env.HUBSPOT_PROPERTY_SOURCE_CHANNEL || "alineva_canal_origen",
       ownerId: process.env.HUBSPOT_PROPERTY_OWNER_ID || "hubspot_owner_id",
+      leadStatus: HUBSPOT_PROPERTY_LEAD_STATUS,
     },
     timeoutMs: Number(process.env.HUBSPOT_TIMEOUT_MS) || 8000,
   };

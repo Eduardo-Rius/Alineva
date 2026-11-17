@@ -10,10 +10,18 @@ import {
   formatDateInAlinevaTimeZone,
   ALINEVA_TIME_ZONE,
   isValidHubSpotOwnerId,
+  DEFAULT_INITIAL_LEAD_STATUS,
+  HUBSPOT_PROPERTY_LEAD_STATUS,
 } from "./config";
 import { SanitizedLeadData } from "./types";
 
-export { formatDateInAlinevaTimeZone, ALINEVA_TIME_ZONE, isValidHubSpotOwnerId };
+export {
+  formatDateInAlinevaTimeZone,
+  ALINEVA_TIME_ZONE,
+  isValidHubSpotOwnerId,
+  DEFAULT_INITIAL_LEAD_STATUS,
+  HUBSPOT_PROPERTY_LEAD_STATUS,
+};
 
 interface CachedOwnerEntry {
   ownerId: string;
@@ -226,10 +234,13 @@ export class HubSpotClient {
   ): Promise<UpsertResult> {
     const updateUrl = this.config.endpoints.update(contactId);
 
-    // Regla estricta: NUNCA enviar hubspot_owner_id en PATCH para no reasignar contactos existentes
+    // Regla estricta: NUNCA enviar hubspot_owner_id ni hs_lead_status en PATCH
+    // para no reasignar ni degradar/sobrescribir contactos existentes
     const safeProperties = { ...properties };
     delete safeProperties[this.config.properties.ownerId];
     delete safeProperties.hubspot_owner_id;
+    delete safeProperties[this.config.properties.leadStatus];
+    delete safeProperties.hs_lead_status;
 
     try {
       const updateResponse = await this.customFetch(updateUrl, {
@@ -529,8 +540,11 @@ export class HubSpotClient {
       }
 
       // Paso 3: Si no existe, crear nuevo contacto
-      // Regla: Asignar hubspot_owner_id ÚNICAMENTE al crear y sólo si se resuelve un propietario válido por correo
-      const createProperties: Record<string, string> = { ...properties };
+      // Regla: Asignar hubspot_owner_id y hs_lead_status ÚNICAMENTE al crear
+      const createProperties: Record<string, string> = {
+        ...properties,
+        [this.config.properties.leadStatus]: DEFAULT_INITIAL_LEAD_STATUS,
+      };
 
       if (this.config.defaultOwnerEmail) {
         const resolvedOwnerId = await this.resolveOwnerIdByEmail(
@@ -548,7 +562,7 @@ export class HubSpotClient {
         lead.email,
         token,
         controller.signal,
-        properties // Propiedades limpias sin propietario para actualización en caso de carrera 409
+        properties // Propiedades limpias sin propietario ni estado para actualización en caso de carrera 409
       );
       clearTimeout(timeoutId);
       return { ...createRes, internalTimestampUtc };
