@@ -125,6 +125,7 @@ export function getHubSpotConfig() {
       sourceChannel: process.env.HUBSPOT_PROPERTY_SOURCE_CHANNEL || "alineva_canal_origen",
       ownerId: process.env.HUBSPOT_PROPERTY_OWNER_ID || "hubspot_owner_id",
       leadStatus: HUBSPOT_PROPERTY_LEAD_STATUS,
+      mobilePhone: process.env.HUBSPOT_PROPERTY_MOBILE_PHONE || "mobilephone",
     },
     timeoutMs: Number(process.env.HUBSPOT_TIMEOUT_MS) || 8000,
   };

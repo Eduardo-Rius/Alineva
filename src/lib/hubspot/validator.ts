@@ -14,6 +14,8 @@ const ALLOWED_KEYS = new Set([
   "company",
   "email",
   "phone",
+  "mobilePhone",
+  "mobilephone",
   "interest",
   "message",
   "privacyConsent",
@@ -89,7 +91,7 @@ export function validateContactPayload(body: unknown): ValidationResult {
     errors.email = "Por favor ingresa un correo electrónico válido.";
   }
 
-  // 7. Teléfono (Opcional, max 30)
+  // 7. Teléfono de la empresa (Opcional, max 30)
   let sanitizedPhone: string | undefined = undefined;
   if (raw.phone !== undefined && raw.phone !== null && raw.phone !== "") {
     if (typeof raw.phone !== "string") {
@@ -101,21 +103,52 @@ export function validateContactPayload(body: unknown): ValidationResult {
     }
   }
 
-  // 8. Área de interés (Obligatorio, catálogo cerrado)
+  // 8. WhatsApp / Teléfono móvil (Opcional, max 30)
+  let sanitizedMobilePhone: string | undefined = undefined;
+  const rawMobile = raw.mobilePhone ?? raw.mobilephone;
+  if (rawMobile !== undefined && rawMobile !== null && rawMobile !== "") {
+    if (typeof rawMobile !== "string") {
+      errors.mobilePhone = "El teléfono móvil debe ser una cadena de texto.";
+    } else {
+      const trimmedMobile = rawMobile.trim();
+      if (trimmedMobile.length > 30) {
+        errors.mobilePhone = "El teléfono móvil no puede exceder 30 caracteres.";
+      } else if (trimmedMobile.includes("@")) {
+        errors.mobilePhone =
+          "Por favor ingresa un número telefónico válido (sin correos ni nombres de usuario).";
+      } else if (/(?:https?:\/\/|www\.|\.[a-z]{2,})/i.test(trimmedMobile)) {
+        errors.mobilePhone =
+          "Por favor ingresa un número telefónico válido (sin enlaces web).";
+      } else if (!/^\+?[0-9\s\-().]+$/.test(trimmedMobile)) {
+        errors.mobilePhone = "El número telefónico contiene caracteres no válidos.";
+      } else {
+        const digits = trimmedMobile.replace(/\D/g, "");
+        if (digits.length < 7) {
+          errors.mobilePhone = "El número telefónico debe contener al menos 7 dígitos.";
+        } else if (digits.length > 15) {
+          errors.mobilePhone = "El número telefónico no puede contener más de 15 dígitos.";
+        } else {
+          sanitizedMobilePhone = trimmedMobile;
+        }
+      }
+    }
+  }
+
+  // 9. Área de interés (Obligatorio, catálogo cerrado)
   if (typeof raw.interest !== "string" || !raw.interest.trim()) {
     errors.interest = "Por favor selecciona un área de interés.";
   } else if (!AUTHORIZED_INTERESTS.includes(raw.interest.trim() as AuthorizedInterest)) {
     errors.interest = "El área de interés seleccionada no es válida.";
   }
 
-  // 9. Mensaje (Obligatorio, max 3000)
+  // 10. Mensaje (Obligatorio, max 3000)
   if (typeof raw.message !== "string" || !raw.message.trim()) {
     errors.message = "Por favor describe brevemente qué necesitas.";
   } else if (raw.message.trim().length > 3000) {
     errors.message = "El mensaje no puede exceder 3000 caracteres.";
   }
 
-  // 10. Consentimiento de privacidad (Obligatorio, estrictamente boolean true)
+  // 11. Consentimiento de privacidad (Obligatorio, estrictamente boolean true)
   if (raw.privacyConsent !== true) {
     errors.privacyConsent = "Debes aceptar el Aviso de Privacidad para continuar.";
   }
@@ -136,6 +169,7 @@ export function validateContactPayload(body: unknown): ValidationResult {
       company: (raw.company as string).trim(),
       email: (raw.email as string).trim().toLowerCase(),
       phone: sanitizedPhone,
+      mobilePhone: sanitizedMobilePhone,
       interest: (raw.interest as string).trim(),
       message: (raw.message as string).trim(),
       privacyConsent: true,

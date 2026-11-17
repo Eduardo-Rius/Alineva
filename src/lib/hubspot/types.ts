@@ -9,6 +9,7 @@ export interface ContactFormInput {
   company: string;
   email: string;
   phone?: string;
+  mobilePhone?: string;
   interest: string;
   message: string;
   privacyConsent: boolean;
@@ -21,6 +22,7 @@ export interface SanitizedLeadData {
   company: string;
   email: string;
   phone?: string;
+  mobilePhone?: string;
   interest: string;
   message: string;
   privacyConsent: true;
@@ -38,6 +40,7 @@ export interface HubSpotContactProperties {
   email: string;
   company: string;
   phone?: string;
+  mobilephone?: string;
   [customPropertyKey: string]: string | undefined;
 }
 

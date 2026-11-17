@@ -119,8 +119,13 @@ export class HubSpotClient {
       props[properties.consentTimestamp] = String(consentedAt.getTime());
     }
 
-    if (lead.phone) {
-      props.phone = lead.phone;
+    if (lead.phone && lead.phone.trim() !== "") {
+      props.phone = lead.phone.trim();
+    }
+
+    const mobilePropKey = properties.mobilePhone || "mobilephone";
+    if (lead.mobilePhone && lead.mobilePhone.trim() !== "") {
+      props[mobilePropKey] = lead.mobilePhone.trim();
     }
 
     return { properties: props, internalTimestampUtc, localConsentDate };
@@ -241,6 +246,15 @@ export class HubSpotClient {
     delete safeProperties.hubspot_owner_id;
     delete safeProperties[this.config.properties.leadStatus];
     delete safeProperties.hs_lead_status;
+
+    // Regla defensiva: NUNCA enviar propiedades telefónicas vacías para no borrar datos existentes en CRM
+    if (safeProperties.phone !== undefined && safeProperties.phone.trim() === "") {
+      delete safeProperties.phone;
+    }
+    const mobilePropKey = this.config.properties.mobilePhone || "mobilephone";
+    if (safeProperties[mobilePropKey] !== undefined && safeProperties[mobilePropKey].trim() === "") {
+      delete safeProperties[mobilePropKey];
+    }
 
     try {
       const updateResponse = await this.customFetch(updateUrl, {

@@ -125,6 +125,13 @@
   font-weight: 500;
 }
 
+.helperText {
+  font-size: 0.8125rem;
+  color: var(--color-text-secondary);
+  line-height: 1.4;
+  margin-top: 0.125rem;
+}
+
 /* Privacy Checkbox */
 .privacyGroup {
   display: flex;

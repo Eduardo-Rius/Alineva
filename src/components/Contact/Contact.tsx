@@ -22,6 +22,7 @@ interface FormErrors {
   company?: string;
   email?: string;
   phone?: string;
+  mobilePhone?: string;
   interest?: string;
   message?: string;
   privacy?: string;
@@ -35,6 +36,7 @@ export default function Contact() {
     company: "",
     email: "",
     phone: "",
+    mobilePhone: "",
     interest: "",
     message: "",
     privacy: false,
@@ -89,6 +91,32 @@ export default function Contact() {
       newErrors.email = "Por favor ingresa un correo electrónico válido.";
     }
 
+    if (formData.phone && formData.phone.trim().length > 30) {
+      newErrors.phone = "El teléfono no puede exceder 30 caracteres.";
+    }
+
+    if (formData.mobilePhone && formData.mobilePhone.trim()) {
+      const val = formData.mobilePhone.trim();
+      if (val.length > 30) {
+        newErrors.mobilePhone = "El teléfono móvil no puede exceder 30 caracteres.";
+      } else if (val.includes("@")) {
+        newErrors.mobilePhone =
+          "Por favor ingresa un número telefónico válido (sin correos ni nombres de usuario).";
+      } else if (/(?:https?:\/\/|www\.|\.[a-z]{2,})/i.test(val)) {
+        newErrors.mobilePhone =
+          "Por favor ingresa un número telefónico válido (sin enlaces web).";
+      } else if (!/^\+?[0-9\s\-().]+$/.test(val)) {
+        newErrors.mobilePhone = "El número telefónico contiene caracteres no válidos.";
+      } else {
+        const digits = val.replace(/\D/g, "");
+        if (digits.length < 7) {
+          newErrors.mobilePhone = "El número telefónico debe contener al menos 7 dígitos.";
+        } else if (digits.length > 15) {
+          newErrors.mobilePhone = "El número telefónico no puede contener más de 15 dígitos.";
+        }
+      }
+    }
+
     if (!formData.interest) {
       newErrors.interest = "Por favor selecciona un área de interés.";
     }
@@ -125,6 +153,7 @@ export default function Contact() {
           company: formData.company,
           email: formData.email,
           phone: formData.phone || undefined,
+          mobilePhone: formData.mobilePhone || undefined,
           interest: formData.interest,
           message: formData.message,
           privacyConsent: formData.privacy,
@@ -142,6 +171,7 @@ export default function Contact() {
           company: "",
           email: "",
           phone: "",
+          mobilePhone: "",
           interest: "",
           message: "",
           privacy: false,
@@ -296,7 +326,7 @@ export default function Contact() {
               <div className={styles.formRow}>
                 <div className={styles.inputGroup}>
                   <label htmlFor="contact-phone" className={styles.label}>
-                    Teléfono <span className={styles.optional}>(opcional)</span>
+                    Teléfono de la empresa <span className={styles.optional}>(opcional)</span>
                   </label>
                   <input
                     type="tel"
@@ -304,9 +334,47 @@ export default function Contact() {
                     name="phone"
                     value={formData.phone}
                     onChange={handleChange}
-                    className={styles.input}
+                    className={`${styles.input} ${errors.phone ? styles.inputError : ""}`}
+                    aria-invalid={!!errors.phone}
+                    aria-describedby={errors.phone ? "phone-error" : undefined}
+                    inputMode="tel"
                     autoComplete="tel"
                   />
+                  {errors.phone && (
+                    <span id="phone-error" className={styles.errorMessage} role="alert">
+                      {errors.phone}
+                    </span>
+                  )}
+                </div>
+
+                <div className={styles.inputGroup}>
+                  <label htmlFor="contact-mobile-phone" className={styles.label}>
+                    WhatsApp / teléfono móvil <span className={styles.optional}>(opcional)</span>
+                  </label>
+                  <input
+                    type="tel"
+                    id="contact-mobile-phone"
+                    name="mobilePhone"
+                    value={formData.mobilePhone}
+                    onChange={handleChange}
+                    className={`${styles.input} ${errors.mobilePhone ? styles.inputError : ""}`}
+                    aria-invalid={!!errors.mobilePhone}
+                    aria-describedby={
+                      errors.mobilePhone
+                        ? "mobile-phone-error contact-mobile-phone-helper"
+                        : "contact-mobile-phone-helper"
+                    }
+                    inputMode="tel"
+                    autoComplete="tel"
+                  />
+                  <span id="contact-mobile-phone-helper" className={styles.helperText}>
+                    Compártelo solo si prefieres que continuemos la conversación por WhatsApp. Es opcional y puedes elegir otro canal.
+                  </span>
+                  {errors.mobilePhone && (
+                    <span id="mobile-phone-error" className={styles.errorMessage} role="alert">
+                      {errors.mobilePhone}
+                    </span>
+                  )}
                 </div>
               </div>
 
