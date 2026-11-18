@@ -6,8 +6,10 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { HubSpotClient } from "@/lib/hubspot/client";
+import { formatDateInAlinevaTimeZone } from "@/lib/hubspot/config";
 import { validateContactPayload } from "@/lib/hubspot/validator";
 import { ApiContactResponse } from "@/lib/hubspot/types";
+import { ResendNotifier } from "@/lib/notifier/resendNotifier";
 
 const MAX_BODY_BYTES = 32 * 1024; // 32 KB
 
@@ -182,13 +184,33 @@ export async function POST(request: NextRequest): Promise<NextResponse<ApiContac
     );
   }
 
-  // 7. Éxito institucional uniforme (Prevención de enumeración de prospectos)
-  // Nota de seguridad: La respuesta hacia el cliente web es ESTRICTAMENTE IDÉNTICA
-  // tanto si el contacto fue creado como si ya existía y fue actualizado.
+  // 7. Notificación desacoplada post-confirmación de HubSpot (SR-ALINEVA-WHATSAPP-06H)
+  // Regla: Enviar aviso ÚNICAMENTE después del éxito confirmado por HubSpot.
+  // Si el envío de correo falla o no está configurado, el contacto en HubSpot NO se borra ni se duplica.
+  const localConsentDate = formatDateInAlinevaTimeZone(new Date());
+  const notifier = new ResendNotifier();
+  const notificationResult = await notifier.sendLeadNotification(
+    validation.sanitizedData,
+    {
+      contactId: result.contactId,
+      isNewContact: result.action === "created",
+      localConsentDate,
+      portalId: process.env.HUBSPOT_PORTAL_ID || "248017141",
+    }
+  );
+
+  // Control de resultado de notificación (Protocolo 06H):
+  // - SUCCESS_PROCESSED: HubSpot éxito y correo entregado correctamente.
+  // - SUCCESS_CRM_NOTIFICATION_PENDING: HubSpot éxito, pero notificación no configurada o fallida.
+  const responseCode =
+    notificationResult.ok
+      ? "SUCCESS_PROCESSED"
+      : "SUCCESS_CRM_NOTIFICATION_PENDING";
+
   return NextResponse.json(
     {
       ok: true,
-      code: "SUCCESS_PROCESSED",
+      code: responseCode,
       message:
         "Mensaje recibido. Muchas gracias por contactarnos. Emma Alvarado y Yuriko Peña se comunicarán contigo a la brevedad.",
     },

@@ -349,7 +349,7 @@ export default function Contact() {
 
                 <div className={styles.inputGroup}>
                   <label htmlFor="contact-mobile-phone" className={styles.label}>
-                    WhatsApp / teléfono móvil <span className={styles.optional}>(opcional)</span>
+                    Número de WhatsApp <span className={styles.optional}>(opcional)</span>
                   </label>
                   <input
                     type="tel"

@@ -123,9 +123,11 @@ export class HubSpotClient {
       props.phone = lead.phone.trim();
     }
 
-    const mobilePropKey = properties.mobilePhone || "mobilephone";
+    // Regla 06H: Número de WhatsApp mapeado exclusivamente a hs_whatsapp_phone_number.
+    // mobilephone y hs_whatsapp_bsuid NUNCA se envían.
+    const whatsappPropKey = properties.whatsappPhone || "hs_whatsapp_phone_number";
     if (lead.mobilePhone && lead.mobilePhone.trim() !== "") {
-      props[mobilePropKey] = lead.mobilePhone.trim();
+      props[whatsappPropKey] = lead.mobilePhone.trim();
     }
 
     return { properties: props, internalTimestampUtc, localConsentDate };
@@ -240,16 +242,24 @@ export class HubSpotClient {
     const updateUrl = this.config.endpoints.update(contactId);
 
     // Regla estricta: NUNCA enviar hubspot_owner_id ni hs_lead_status en PATCH
-    // para no reasignar ni degradar/sobrescribir contactos existentes
+    // para no reasignar ni degradar/sobrescribir contactos existentes.
+    // Asimismo, mobilephone y hs_whatsapp_bsuid quedan estrictamente excluidos.
     const safeProperties = { ...properties };
     delete safeProperties[this.config.properties.ownerId];
     delete safeProperties.hubspot_owner_id;
     delete safeProperties[this.config.properties.leadStatus];
     delete safeProperties.hs_lead_status;
+    delete safeProperties.mobilephone;
+    delete safeProperties.hs_whatsapp_bsuid;
+    delete safeProperties.whatsapp_bsuid;
 
     // Regla defensiva: NUNCA enviar propiedades telefónicas vacías para no borrar datos existentes en CRM
     if (safeProperties.phone !== undefined && safeProperties.phone.trim() === "") {
       delete safeProperties.phone;
+    }
+    const whatsappPropKey = this.config.properties.whatsappPhone || "hs_whatsapp_phone_number";
+    if (safeProperties[whatsappPropKey] !== undefined && safeProperties[whatsappPropKey].trim() === "") {
+      delete safeProperties[whatsappPropKey];
     }
     const mobilePropKey = this.config.properties.mobilePhone || "mobilephone";
     if (safeProperties[mobilePropKey] !== undefined && safeProperties[mobilePropKey].trim() === "") {
@@ -554,22 +564,20 @@ export class HubSpotClient {
       }
 
       // Paso 3: Si no existe, crear nuevo contacto
-      // Regla: Asignar hubspot_owner_id y hs_lead_status ÚNICAMENTE al crear
+      // Regla 06H: Los prospectos nuevos se registran inicialmente sin propietario (hubspot_owner_id no se envía en CREATE).
+      // La asignación posterior será una operación administrativa dentro de HubSpot.
+      // Se conserva hs_lead_status = "NEW" y lifecyclestage = "lead" únicamente en CREATE.
       const createProperties: Record<string, string> = {
         ...properties,
         [this.config.properties.leadStatus]: DEFAULT_INITIAL_LEAD_STATUS,
       };
 
-      if (this.config.defaultOwnerEmail) {
-        const resolvedOwnerId = await this.resolveOwnerIdByEmail(
-          this.config.defaultOwnerEmail,
-          token,
-          controller.signal
-        );
-        if (resolvedOwnerId && isValidHubSpotOwnerId(resolvedOwnerId)) {
-          createProperties[this.config.properties.ownerId] = resolvedOwnerId;
-        }
-      }
+      // Exclusión defensiva estricta de propietario, móvil legacy y BSUID en CREATE
+      delete createProperties[this.config.properties.ownerId];
+      delete createProperties.hubspot_owner_id;
+      delete createProperties.mobilephone;
+      delete createProperties.hs_whatsapp_bsuid;
+      delete createProperties.whatsapp_bsuid;
 
       const createRes = await this.createContact(
         createProperties,
