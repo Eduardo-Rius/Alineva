@@ -109,9 +109,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     phone: phone ? phone.slice(0, 30) : undefined,
     mobilePhone: whatsapp ? whatsapp.slice(0, 30) : undefined, // HubSpotClient mapea mobilePhone a hs_whatsapp_phone_number
     interest: interest.slice(0, 100),
-    message: needSummary.slice(0, 2000),
+    message: `[Origen: Asistente virtual Alineva]\n${needSummary}`.slice(0, 2000),
     privacyConsent: true,
-    sourceChannel: "Asistente virtual Alineva",
+    sourceChannel: "Chat voz ElevenLabs",
   };
 
   try {
