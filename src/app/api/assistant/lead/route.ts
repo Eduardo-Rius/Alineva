@@ -134,6 +134,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       {
         ok: false,
         success: false,
+        errorType: result.errorType,
+        errorMessage: result.errorMessage,
         message:
           "No fue posible confirmar el registro en el sistema CRM en este momento. Por favor invita al usuario a contactarnos a través del formulario web en alineva.com.mx/#contacto.",
       },

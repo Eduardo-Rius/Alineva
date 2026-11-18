@@ -209,10 +209,11 @@ export class HubSpotClient {
         };
       }
 
+      const errorBody = await searchResponse.text().catch(() => "");
       return {
         ok: false,
         errorType: "UPSTREAM_ERROR",
-        errorMessage: "Error al consultar la existencia del contacto en el CRM.",
+        errorMessage: `HubSpot Search HTTP ${searchResponse.status}: ${errorBody.slice(0, 300)}`,
       };
     } catch (err: unknown) {
       if (err instanceof Error && err.name === "AbortError") {
@@ -401,10 +402,11 @@ export class HubSpotClient {
         };
       }
 
+      const errorBody = await createResponse.text().catch(() => "");
       return {
         ok: false,
         errorType: "UPSTREAM_ERROR",
-        errorMessage: "Respuesta inesperada al crear el contacto en el CRM.",
+        errorMessage: `HubSpot HTTP ${createResponse.status}: ${errorBody.slice(0, 300)}`,
       };
     } catch (err: unknown) {
       if (err instanceof Error && err.name === "AbortError") {
