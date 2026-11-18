@@ -106,7 +106,7 @@ export class HubSpotClient {
       [properties.consentDate]: localConsentDate,
       [properties.privacyVersion]: INSTITUTIONAL_LEGAL_METADATA.PRIVACY_VERSION,
       [properties.privacyHash]: INSTITUTIONAL_LEGAL_METADATA.PRIVACY_HASH,
-      [properties.sourceChannel]: INSTITUTIONAL_LEGAL_METADATA.SOURCE_CHANNEL,
+      [properties.sourceChannel]: lead.sourceChannel || INSTITUTIONAL_LEGAL_METADATA.SOURCE_CHANNEL,
     };
 
     if (properties.fullName && properties.fullName.trim() !== "") {

@@ -26,6 +26,7 @@ export interface SanitizedLeadData {
   interest: string;
   message: string;
   privacyConsent: true;
+  sourceChannel?: string;
 }
 
 export interface InstitutionalMetadata {
