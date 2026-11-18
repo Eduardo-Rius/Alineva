@@ -63,7 +63,6 @@ export interface ApiContactResponse {
   ok: boolean;
   code:
     | 'SUCCESS_PROCESSED'
-    | 'SUCCESS_CRM_NOTIFICATION_PENDING'
     | 'SUCCESS_CREATED'
     | 'SUCCESS_UPDATED'
     | 'VALIDATION_ERROR'

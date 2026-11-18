@@ -564,17 +564,26 @@ export class HubSpotClient {
       }
 
       // Paso 3: Si no existe, crear nuevo contacto
-      // Regla 06H: Los prospectos nuevos se registran inicialmente sin propietario (hubspot_owner_id no se envía en CREATE).
-      // La asignación posterior será una operación administrativa dentro de HubSpot.
+      // Protocolo 07B: Asignación dinámica del propietario SOLO al crear contacto
+      // Resolver el propietario dinámicamente mediante HUBSPOT_DEFAULT_OWNER_EMAIL (sin hardcodear correos ni IDs).
       // Se conserva hs_lead_status = "NEW" y lifecyclestage = "lead" únicamente en CREATE.
       const createProperties: Record<string, string> = {
         ...properties,
         [this.config.properties.leadStatus]: DEFAULT_INITIAL_LEAD_STATUS,
       };
 
-      // Exclusión defensiva estricta de propietario, móvil legacy y BSUID en CREATE
-      delete createProperties[this.config.properties.ownerId];
-      delete createProperties.hubspot_owner_id;
+      if (this.config.defaultOwnerEmail) {
+        const resolvedOwnerId = await this.resolveOwnerIdByEmail(
+          this.config.defaultOwnerEmail,
+          token,
+          controller.signal
+        );
+        if (resolvedOwnerId && isValidHubSpotOwnerId(resolvedOwnerId)) {
+          createProperties[this.config.properties.ownerId] = resolvedOwnerId;
+        }
+      }
+
+      // Exclusión defensiva estricta de móvil legacy y BSUID en CREATE
       delete createProperties.mobilephone;
       delete createProperties.hs_whatsapp_bsuid;
       delete createProperties.whatsapp_bsuid;
