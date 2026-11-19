@@ -2,35 +2,13 @@
 
 import React, { useEffect, useId, useRef, useState } from "react";
 import styles from "./VoiceAssistant.module.css";
-import { useAssistant } from "./AssistantProvider";
+import {
+  useAssistant,
+  getStatusText,
+  getDialogTitle,
+  getComposerPlaceholder,
+} from "./AssistantProvider";
 import { AssistantRobot } from "./AssistantRobot";
-import type { AssistantVisualState } from "./types";
-
-function getStatusText(
-  visualState: AssistantVisualState,
-  isRequestingMic: boolean,
-  isAgentTyping: boolean
-): string {
-  if (isRequestingMic) return "Solicitando permiso de micrófono…";
-  switch (visualState) {
-    case "connecting":
-      return "Conectando con Alineva…";
-    case "listening":
-      return "Escuchando… habla con naturalidad";
-    case "speaking":
-      return "Alineva está respondiendo…";
-    case "text-active":
-      return isAgentTyping
-        ? "Alineva está escribiendo una respuesta…"
-        : "Chat escrito activo (sin micrófono)";
-    case "disconnecting":
-      return "Finalizando conversación…";
-    case "error":
-      return "No se pudo continuar la conexión";
-    default:
-      return "Listo para conversar";
-  }
-}
 
 export function AssistantPanel() {
   const {
@@ -170,7 +148,9 @@ export function AssistantPanel() {
   const statusText = getStatusText(
     visualState,
     isRequestingMic,
-    isAgentTyping
+    isAgentTyping,
+    activeMode,
+    messages.length > 0
   );
 
   // Atributo closedby como mejora progresiva (Baseline en progreso)
@@ -202,9 +182,7 @@ export function AssistantPanel() {
               />
               <div className={styles.dialogHeadingGroup}>
                 <h2 id={titleId} className={styles.dialogTitle}>
-                  {activeMode === "text"
-                    ? "Chat escrito · Alineva"
-                    : "Asistente por voz · Alineva"}
+                  {getDialogTitle(activeMode)}
                 </h2>
                 <p className={styles.dialogStatusLine}>
                   <span
@@ -353,7 +331,7 @@ export function AssistantPanel() {
             )}
 
             {/* Modalidad Texto */}
-            {activeMode === "text" && (
+            {(activeMode === "text" || (activeMode === "none" && messages.length > 0)) && (
               <div
                 className={styles.chatMessages}
                 role="log"
@@ -395,6 +373,12 @@ export function AssistantPanel() {
                       <span />
                     </span>
                     <span>Alineva está redactando una respuesta…</span>
+                  </div>
+                )}
+
+                {visualState === "idle" && messages.length > 0 && !errorMessage && (
+                  <div className={styles.chatWelcome} role="status">
+                    <p>Conversación finalizada.</p>
                   </div>
                 )}
 
@@ -446,11 +430,10 @@ export function AssistantPanel() {
                   value={draft}
                   onChange={(e) => setDraft(e.target.value)}
                   onKeyDown={handleTextareaKeyDown}
-                  placeholder={
-                    visualState === "text-active"
-                      ? "Escribe tu mensaje… (Enter para enviar, Shift+Enter nueva línea)"
-                      : "Esperando conexión…"
-                  }
+                  placeholder={getComposerPlaceholder(
+                    visualState,
+                    messages.length > 0
+                  )}
                   disabled={visualState !== "text-active"}
                   className={styles.chatTextarea}
                 />

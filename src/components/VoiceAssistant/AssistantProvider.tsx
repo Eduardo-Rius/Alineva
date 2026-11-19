@@ -92,6 +92,66 @@ function waitMs(ms: number): Promise<void> {
   });
 }
 
+export function getStatusText(
+  visualState: AssistantVisualState,
+  isRequestingMic: boolean,
+  isAgentTyping: boolean,
+  activeMode: AssistantMode,
+  hasMessages: boolean
+): string {
+  if (isRequestingMic) return "Solicitando permiso de micrófono…";
+  switch (visualState) {
+    case "connecting":
+      return "Conectando con Alineva…";
+    case "listening":
+      return "Escuchando… habla con naturalidad";
+    case "speaking":
+      return "Alineva está respondiendo…";
+    case "text-active":
+      return isAgentTyping
+        ? "Alineva está escribiendo una respuesta…"
+        : "Chat escrito activo (sin micrófono)";
+    case "disconnecting":
+      return "Finalizando conversación…";
+    case "error":
+      return "No se pudo continuar la conexión";
+    case "idle":
+    default:
+      if (hasMessages) {
+        return "Conversación finalizada";
+      }
+      if (activeMode === "text") {
+        return "Chat escrito listo";
+      }
+      if (activeMode === "voice") {
+        return "Listo para conversar";
+      }
+      return "Disponible ahora";
+  }
+}
+
+export function getDialogTitle(activeMode: AssistantMode): string {
+  if (activeMode === "text") return "Chat escrito · Alineva";
+  if (activeMode === "voice") return "Asistente por voz · Alineva";
+  return "Asistente Virtual · Alineva";
+}
+
+export function getComposerPlaceholder(
+  visualState: AssistantVisualState,
+  hasMessages: boolean
+): string {
+  if (visualState === "text-active") {
+    return "Escribe tu mensaje… (Enter para enviar, Shift+Enter nueva línea)";
+  }
+  if (hasMessages && visualState === "idle") {
+    return "Conversación finalizada";
+  }
+  if (visualState === "connecting") {
+    return "Conectando…";
+  }
+  return "Esperando conexión…";
+}
+
 function AssistantControllerInner({ children }: { children: React.ReactNode }) {
   const [activeMode, setActiveMode] = useState<AssistantMode>("none");
   const [visualState, setVisualState] = useState<AssistantVisualState>("idle");
@@ -160,12 +220,14 @@ function AssistantControllerInner({ children }: { children: React.ReactNode }) {
         return;
       }
 
-      // Cierre iniciado por el agente o fin natural de sesión
+      // Cierre iniciado por el agente o fin natural de sesión.
+      // Preservamos activeMode mientras el panel permanezca abierto
+      // para no colapsar la interfaz de texto a voz ni desmontar el historial.
+      // activeMode solo se restablece a "none" cuando el usuario cierra expresamente el panel.
       setVisualState("idle");
-      updateActiveMode("none");
       setStatusAnnouncement("Conversación finalizada.");
     },
-    [updateActiveMode]
+    []
   );
 
   const handleModeChange = useCallback((prop: { mode: Mode }) => {
@@ -351,9 +413,8 @@ function AssistantControllerInner({ children }: { children: React.ReactNode }) {
       // Silencioso: continuar limpieza de estado
     }
 
-    updateActiveMode("none");
     setVisualState("idle");
-  }, [updateActiveMode]);
+  }, []);
 
   const restoreFocusToInvoker = useCallback(() => {
     const invoker = lastInvokerRef.current;
@@ -375,6 +436,8 @@ function AssistantControllerInner({ children }: { children: React.ReactNode }) {
         setIsRequestingMic(false);
         if (shouldClosePanel) {
           setIsPanelOpen(false);
+          updateActiveMode("none");
+          setMessages([]);
           restoreFocusToInvoker();
         }
         setStatusAnnouncement("Conversación finalizada.");
@@ -382,7 +445,7 @@ function AssistantControllerInner({ children }: { children: React.ReactNode }) {
         transitionLockRef.current = false;
       }
     },
-    [restoreFocusToInvoker, stopCurrentSessionSafely]
+    [restoreFocusToInvoker, stopCurrentSessionSafely, updateActiveMode]
   );
 
   const closePanel = useCallback(async (): Promise<void> => {
