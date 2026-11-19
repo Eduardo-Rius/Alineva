@@ -51,7 +51,7 @@ export default function Methodology() {
         {/* Planning evidence photograph */}
         <div className={styles.imageWrapper}>
           <Image
-            src="/images/alineva/como-trabajamos.png"
+            src="/images/alineva/como-trabajamos.webp"
             alt="Mesa de trabajo y planeación estratégica de negocio"
             fill
             className={styles.planningImage}

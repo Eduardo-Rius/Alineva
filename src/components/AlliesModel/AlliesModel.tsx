@@ -55,7 +55,7 @@ export default function AlliesModel() {
           <div className={styles.explanationCol}>
             <div className={styles.imageFrame}>
               <Image
-                src="/images/alineva/modelo-aliados.png"
+                src="/images/alineva/modelo-aliados.webp"
                 alt="Reunión de coordinación estratégica con aliados y especialistas"
                 fill
                 className={styles.alliesImage}

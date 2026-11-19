@@ -54,7 +54,7 @@ export default function About() {
         {/* Joint Opening Photography */}
         <div className={styles.jointPhotoFrame}>
           <Image
-            src="/images/alineva/nosotras-apertura.png"
+            src="/images/alineva/nosotras-apertura.webp"
             alt="Emma Alvarado y Yuriko Peña, socias fundadoras de Alineva"
             fill
             className={styles.jointPhotoImage}

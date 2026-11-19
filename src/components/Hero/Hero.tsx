@@ -52,8 +52,8 @@ export default function Hero() {
         <div className={styles.mediaCol}>
           <div className={styles.imageFrame}>
             <Image
-              src="/images/alineva/hero-fundadoras.png"
-              alt="Emma Alvarado y Yuriko Peña, fundadoras de Alineva, en sesión de trabajo estratégico"
+              src="/images/alineva/hero-fundadoras.webp"
+              alt="Emma Alvarado, socia fundadora de Alineva, en sesión de trabajo estratégico con clientes"
               fill
               priority
               quality={90}
