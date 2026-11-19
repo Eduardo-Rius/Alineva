@@ -80,7 +80,7 @@ export default function GrowthAreas() {
         {/* Visual pause photography banner */}
         <div className={styles.visualPauseFrame}>
           <Image
-            src="/images/alineva/servicios-estrategia.png"
+            src="/images/alineva/servicios-estrategia.webp"
             alt="Sesión de estrategia y definición de prioridades de negocio en Alineva"
             fill
             className={styles.visualPauseImage}
