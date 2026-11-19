@@ -60,6 +60,7 @@ interface SearchResult {
   ok: boolean;
   found?: boolean;
   contactId?: string;
+  existingSourceChannel?: string;
   errorType?: UpsertResult["errorType"];
   errorMessage?: string;
   retryAfterSeconds?: number;
@@ -173,7 +174,7 @@ export class HubSpotClient {
               ],
             },
           ],
-          properties: ["id", "email"],
+          properties: ["id", "email", this.config.properties.sourceChannel],
           limit: 1,
         }),
         signal,
@@ -182,11 +183,24 @@ export class HubSpotClient {
       if (searchResponse.status === 200) {
         const data = (await searchResponse.json().catch(() => null)) as {
           total?: number;
-          results?: Array<{ id: string }>;
+          results?: Array<{
+            id: string;
+            properties?: Record<string, string | null | undefined>;
+          }>;
         } | null;
 
         if (data && typeof data.total === "number" && data.total > 0 && data.results?.[0]?.id) {
-          return { ok: true, found: true, contactId: data.results[0].id };
+          const rawChannel = data.results[0].properties?.[this.config.properties.sourceChannel];
+          const existingSourceChannel =
+            typeof rawChannel === "string" && rawChannel.trim() !== ""
+              ? rawChannel.trim()
+              : undefined;
+          return {
+            ok: true,
+            found: true,
+            contactId: data.results[0].id,
+            existingSourceChannel,
+          };
         }
         return { ok: true, found: false };
       }
@@ -238,13 +252,15 @@ export class HubSpotClient {
     contactId: string,
     properties: Record<string, string>,
     token: string,
-    signal: AbortSignal
+    signal: AbortSignal,
+    options?: { preserveSourceChannel?: boolean }
   ): Promise<UpsertResult> {
     const updateUrl = this.config.endpoints.update(contactId);
 
     // Regla estricta: NUNCA enviar hubspot_owner_id ni hs_lead_status en PATCH
     // para no reasignar ni degradar/sobrescribir contactos existentes.
     // Asimismo, mobilephone y hs_whatsapp_bsuid quedan estrictamente excluidos.
+    // Política first-touch (SR-ALINEVA-VOICE-TEXT-02B): conservar el canal de origen inicial.
     const safeProperties = { ...properties };
     delete safeProperties[this.config.properties.ownerId];
     delete safeProperties.hubspot_owner_id;
@@ -253,6 +269,12 @@ export class HubSpotClient {
     delete safeProperties.mobilephone;
     delete safeProperties.hs_whatsapp_bsuid;
     delete safeProperties.whatsapp_bsuid;
+
+    if (options?.preserveSourceChannel !== false) {
+      delete safeProperties[this.config.properties.sourceChannel];
+      delete safeProperties.alineva_canal_origen;
+      delete safeProperties.alineva__canal_de_origen;
+    }
 
     // Regla defensiva: NUNCA enviar propiedades telefónicas vacías para no borrar datos existentes en CRM
     if (safeProperties.phone !== undefined && safeProperties.phone.trim() === "") {
@@ -554,12 +576,17 @@ export class HubSpotClient {
       }
 
       // Paso 2: Si existe, actualizar registro existente (NUNCA incluir hubspot_owner_id)
+      // Política first-touch: si el contacto ya posee un sourceChannel original, conservarlo intacto.
       if (search.found && search.contactId) {
+        const hasOriginalSourceChannel = Boolean(
+          search.existingSourceChannel && search.existingSourceChannel.trim() !== ""
+        );
         const updateRes = await this.updateContact(
           search.contactId,
           properties,
           token,
-          controller.signal
+          controller.signal,
+          { preserveSourceChannel: hasOriginalSourceChannel }
         );
         clearTimeout(timeoutId);
         return { ...updateRes, internalTimestampUtc };

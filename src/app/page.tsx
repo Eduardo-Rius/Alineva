@@ -9,11 +9,13 @@ import ConversationCTA from "@/components/ConversationCTA/ConversationCTA";
 import About from "@/components/About/About";
 import Contact from "@/components/Contact/Contact";
 import Footer from "@/components/Footer/Footer";
-import VoiceAssistant from "@/components/VoiceAssistant/VoiceAssistant";
+import VoiceAssistant, {
+  AssistantProvider,
+} from "@/components/VoiceAssistant/VoiceAssistant";
 
 export default function Home() {
   return (
-    <>
+    <AssistantProvider>
       <a href="#main-content" className="skip-to-content">
         Saltar al contenido principal
       </a>
@@ -53,8 +55,8 @@ export default function Home() {
       {/* 11. Footer */}
       <Footer />
 
-      {/* 12. Asistente Virtual Oficial ElevenLabs */}
+      {/* 12. Panel y barra móvil del Asistente Virtual Alineva */}
       <VoiceAssistant />
-    </>
+    </AssistantProvider>
   );
 }

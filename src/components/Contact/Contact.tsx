@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import styles from "./Contact.module.css";
+import { AssistantContactCard } from "@/components/VoiceAssistant/AssistantContactCard";
 
 const interestOptions = [
   "Estrategia y crecimiento",
@@ -217,6 +218,7 @@ export default function Contact() {
               una llamada, déjanos tus datos y nos pondremos en contacto
               contigo.
             </p>
+            <AssistantContactCard />
           </div>
 
           {/* Form Column */}

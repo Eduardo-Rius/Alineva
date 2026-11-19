@@ -1,80 +1,1057 @@
-.container {
-  position: fixed;
-  bottom: 24px;
-  right: 24px;
-  z-index: 999;
+/* ==========================================================================
+   Asistente Virtual Alineva — Voz + Texto diferenciados
+   Protocolo: SR-ALINEVA-VOICE-TEXT-02B
+   ========================================================================== */
+
+/* Screen-reader only utility */
+.srOnly {
+  position: absolute !important;
+  clip-path: inset(50%) !important;
+  overflow: hidden !important;
+  width: 1px !important;
+  height: 1px !important;
+  margin: -1px !important;
+  padding: 0 !important;
+  border: 0 !important;
+  white-space: nowrap !important;
+}
+
+/* ==========================================================================
+   Tarjeta nativa integrada en #contacto (columna izquierda)
+   ========================================================================== */
+.contactCard {
+  margin-top: 2rem;
+  padding: clamp(1.25rem, 2.5vw, 1.75rem);
+  background: linear-gradient(145deg, #ffffff 0%, #faf9f6 100%);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 8px 28px rgba(8, 44, 35, 0.06);
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
-  gap: 6px;
-  pointer-events: none;
+  gap: 1.125rem;
+  max-width: 100%;
 }
 
-.badge {
+.cardHeader {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.cardRobotWrap {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cardCopy {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  min-width: 0;
+}
+
+.cardBadge {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 5px 12px;
-  background: rgba(15, 23, 42, 0.88);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(217, 167, 74, 0.35);
-  border-radius: 20px;
-  color: #ffffff;
-  font-size: 11px;
-  font-weight: 500;
-  letter-spacing: 0.02em;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
-  pointer-events: auto;
-  user-select: none;
-  animation: pulseGlow 4s infinite ease-in-out;
+  align-self: flex-start;
+  padding: 0.2rem 0.65rem;
+  border-radius: 999px;
+  background-color: rgba(8, 44, 35, 0.08);
+  color: var(--color-green-deep);
+  font-family: var(--font-heading);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
-.robotIcon {
+.cardTitle {
+  font-family: var(--font-heading);
+  font-size: clamp(1.1rem, 1.6vw, 1.3rem);
+  font-weight: 600;
+  color: var(--color-green-deep);
+  line-height: 1.25;
+}
+
+.cardDescription {
+  font-size: 0.9375rem;
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+}
+
+.statePill {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  gap: 0.45rem;
+  margin-top: 0.25rem;
+  padding: 0.22rem 0.65rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.statePillIdle {
+  background-color: #eef6f3;
+  color: var(--color-green-deep);
+}
+
+.statePillActive {
+  background-color: #e6f5ff;
+  color: #074e78;
+}
+
+.statePillError {
+  background-color: #fdf2f2;
+  color: #9e1c16;
+}
+
+.stateDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: currentColor;
+  flex-shrink: 0;
+}
+
+.cardActions {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.75rem;
+}
+
+@media (min-width: 520px) {
+  .cardActions {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.voiceButton,
+.textButton {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  color: #d9a74a;
-  animation: subtleBob 3s infinite ease-in-out;
+  gap: 0.55rem;
+  min-height: 46px;
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-heading);
+  font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-align: center;
+  transition:
+    background-color var(--transition-fast),
+    border-color var(--transition-fast),
+    color var(--transition-fast),
+    transform var(--transition-fast),
+    box-shadow var(--transition-fast);
 }
 
-.widgetWrapper {
-  pointer-events: auto;
+.voiceButton {
+  background-color: var(--color-green-deep);
+  color: var(--color-white);
+  border: 1.5px solid var(--color-green-deep);
+  box-shadow: 0 4px 14px rgba(8, 44, 35, 0.16);
+}
+
+.voiceButton:hover:not(:disabled) {
+  background-color: var(--color-green-surface);
+  border-color: var(--color-green-surface);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(8, 44, 35, 0.22);
+}
+
+.textButton {
+  background-color: var(--color-white);
+  color: var(--color-green-deep);
+  border: 1.5px solid var(--color-green-deep);
+}
+
+.textButton:hover:not(:disabled) {
+  background-color: rgba(8, 44, 35, 0.05);
+  transform: translateY(-1px);
+}
+
+.voiceButton:disabled,
+.textButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.cardFooterAction {
+  display: flex;
+  justify-content: flex-start;
+}
+
+.inlineEndButton {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #9e1c16;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  padding: 0.25rem 0;
+  min-height: 44px;
+}
+
+.cardHint {
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+  line-height: 1.45;
+  margin-top: -0.25rem;
+}
+
+@media (max-width: 520px) {
+  .cardHeader {
+    gap: 0.9rem;
+  }
+}
+
+/* ==========================================================================
+   Robot de Alineva y animaciones sutiles por estado (GPU-composited)
+   ========================================================================== */
+.robotStage {
   position: relative;
-  transition: transform 0.25s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: transform 0.3s ease;
 }
 
-.widgetWrapper:hover {
-  transform: scale(1.02);
+.contactCard:hover .robotStage.robotStateIdle {
+  transform: translateY(-3px);
 }
 
-@keyframes pulseGlow {
-  0%, 100% {
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
-    border-color: rgba(217, 167, 74, 0.35);
+.robotSizeCard {
+  width: 96px;
+}
+
+.robotSizePanel {
+  width: 112px;
+}
+
+.robotSizeMini {
+  width: 30px;
+}
+
+@media (max-width: 640px) {
+  .robotSizeCard {
+    width: 74px;
   }
-  50% {
-    box-shadow: 0 4px 20px rgba(217, 167, 74, 0.3);
-    border-color: rgba(217, 167, 74, 0.7);
+  .robotSizePanel {
+    width: 92px;
   }
 }
 
-@keyframes subtleBob {
-  0%, 100% {
+.robotFigure {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  display: block;
+}
+
+.robotImage {
+  width: 100%;
+  height: auto;
+  display: block;
+  object-fit: contain;
+  filter: drop-shadow(0 8px 16px rgba(8, 44, 35, 0.14));
+}
+
+.robotSizeMini .robotImage {
+  filter: none;
+}
+
+/* Halo azul alineado con el visor circular del robot */
+.visorHalo {
+  position: absolute;
+  top: 23%;
+  left: 58%;
+  width: 56%;
+  aspect-ratio: 1 / 1;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(34, 184, 255, 0.42) 0%,
+    rgba(14, 140, 224, 0.16) 52%,
+    rgba(14, 140, 224, 0) 75%
+  );
+  opacity: 0.25;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.visorRing {
+  position: absolute;
+  top: 23%;
+  left: 58%;
+  width: 54%;
+  aspect-ratio: 1 / 1;
+  transform: translate(-50%, -50%) scale(0.85);
+  border-radius: 50%;
+  border: 2px solid rgba(34, 184, 255, 0.65);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 3;
+}
+
+.robotSizeMini .visorHalo,
+.robotSizeMini .visorRing {
+  display: none;
+}
+
+/* Estado idle: flotación muy suave */
+.robotStateIdle .robotFigure {
+  animation: robotFloat 4.6s ease-in-out infinite;
+}
+
+.robotStateIdle .visorHalo {
+  animation: visorIdleBreath 4.6s ease-in-out infinite;
+}
+
+/* Estado connecting: pulso tenue en el visor azul */
+.robotStateConnecting .visorHalo {
+  animation: visorConnectingPulse 1.5s ease-in-out infinite;
+}
+
+/* Estado listening: halo / pulsación azul sincronizada */
+.robotStateListening .robotFigure {
+  animation: robotFloat 3.6s ease-in-out infinite;
+}
+
+.robotStateListening .visorHalo {
+  opacity: 0.7;
+  animation: visorListeningGlow 1.8s ease-in-out infinite;
+}
+
+.robotStateListening .visorRing {
+  animation: visorListeningRing 1.8s ease-out infinite;
+}
+
+/* Estado speaking: onda / brillo moderado en el visor */
+.robotStateSpeaking .robotFigure {
+  animation: robotSpeakPulse 1.1s ease-in-out infinite;
+}
+
+.robotStateSpeaking .visorHalo {
+  opacity: 0.9;
+  animation: visorSpeakingWave 0.95s ease-in-out infinite;
+}
+
+.robotStateSpeaking .visorRing {
+  animation: visorSpeakingRing 1.15s ease-out infinite;
+}
+
+/* Estado text-active: presencia azul serena */
+.robotStateTextActive .visorHalo {
+  opacity: 0.45;
+}
+
+/* Estado disconnecting: reposo */
+.robotStateDisconnecting .robotFigure {
+  opacity: 0.75;
+}
+
+/* Estado error: detener absolutamente todas las animaciones activas */
+.robotStateError .robotFigure,
+.robotStateError .visorHalo,
+.robotStateError .visorRing {
+  animation: none !important;
+  opacity: 1;
+}
+
+.robotStateError .visorHalo,
+.robotStateError .visorRing {
+  opacity: 0;
+}
+
+@keyframes robotFloat {
+  0%,
+  100% {
     transform: translateY(0);
   }
   50% {
-    transform: translateY(-2px);
+    transform: translateY(-5px);
   }
 }
 
-@media (max-width: 768px) {
-  .container {
-    bottom: 16px;
-    right: 16px;
+@keyframes visorIdleBreath {
+  0%,
+  100% {
+    opacity: 0.2;
+    transform: translate(-50%, -50%) scale(0.95);
   }
-  .badge {
-    font-size: 10px;
-    padding: 4px 10px;
+  50% {
+    opacity: 0.48;
+    transform: translate(-50%, -50%) scale(1.06);
+  }
+}
+
+@keyframes visorConnectingPulse {
+  0%,
+  100% {
+    opacity: 0.25;
+    transform: translate(-50%, -50%) scale(0.9);
+  }
+  50% {
+    opacity: 0.8;
+    transform: translate(-50%, -50%) scale(1.12);
+  }
+}
+
+@keyframes visorListeningGlow {
+  0%,
+  100% {
+    opacity: 0.5;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  50% {
+    opacity: 0.85;
+    transform: translate(-50%, -50%) scale(1.16);
+  }
+}
+
+@keyframes visorListeningRing {
+  0% {
+    opacity: 0.7;
+    transform: translate(-50%, -50%) scale(0.75);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(1.45);
+  }
+}
+
+@keyframes robotSpeakPulse {
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+  }
+  50% {
+    transform: translateY(-2px) scale(1.015);
+  }
+}
+
+@keyframes visorSpeakingWave {
+  0%,
+  100% {
+    opacity: 0.55;
+    transform: translate(-50%, -50%) scale(0.98);
+  }
+  50% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.25);
+  }
+}
+
+@keyframes visorSpeakingRing {
+  0% {
+    opacity: 0.85;
+    transform: translate(-50%, -50%) scale(0.7);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(1.55);
+  }
+}
+
+/* ==========================================================================
+   Diálogo nativo <dialog> — Panel de Voz y Chat Escrito
+   (display siempre encapsulado en [open], contención de scroll obligatoria)
+   ========================================================================== */
+.dialog {
+  border: none;
+  padding: 0;
+  background: transparent;
+  max-width: 100vw;
+  max-height: 100dvh;
+  margin: 0;
+  overflow: visible;
+}
+
+.dialog:modal {
+  overscroll-behavior: contain;
+}
+
+.dialog::backdrop {
+  background: rgba(8, 44, 35, 0.44);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  overflow: hidden;
+  overscroll-behavior: contain;
+}
+
+.dialog[open] {
+  display: flex;
+  position: fixed;
+  inset: auto 24px 24px auto;
+  width: min(430px, calc(100vw - 32px));
+  height: min(620px, calc(100dvh - 48px));
+}
+
+@media (max-width: 768px) {
+  .dialog[open] {
+    inset: auto 0 0 0;
+    width: 100vw;
+    max-width: 100vw;
+    height: min(86dvh, 680px);
+  }
+}
+
+.dialogSurface {
+  width: 100%;
+  height: 100%;
+  background-color: var(--color-white);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 22px 54px rgba(8, 44, 35, 0.28);
+  border: 1px solid var(--color-border);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+@media (max-width: 768px) {
+  .dialogSurface {
+    border-radius: 16px 16px 0 0;
+    border-bottom: none;
+  }
+}
+
+.dialogHeader {
+  background-color: var(--color-green-deep);
+  color: var(--color-white);
+  padding: 0.9rem 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-shrink: 0;
+}
+
+.dialogIdentity {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  min-width: 0;
+}
+
+.dialogHeadingGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.dialogTitle {
+  font-family: var(--font-heading);
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--color-white);
+  line-height: 1.2;
+}
+
+.dialogStatusLine {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.78rem;
+  color: rgba(255, 255, 255, 0.86);
+  line-height: 1.25;
+}
+
+.dialogStatusDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.dotLive {
+  background-color: #38bdf8;
+}
+
+.dotPending {
+  background-color: #f59e0b;
+}
+
+.dotError {
+  background-color: #f87171;
+}
+
+.dialogHeaderActions {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-shrink: 0;
+}
+
+.switchModeButton {
+  font-family: var(--font-heading);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-white);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: var(--radius-sm);
+  padding: 0.4rem 0.65rem;
+  min-height: 44px;
+  white-space: nowrap;
+  transition: background-color var(--transition-fast);
+}
+
+.switchModeButton:hover:not(:disabled) {
+  background-color: rgba(255, 255, 255, 0.12);
+}
+
+.switchModeButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.closeButton {
+  color: var(--color-white);
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-sm);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color var(--transition-fast);
+}
+
+.closeButton:hover {
+  background-color: rgba(255, 255, 255, 0.14);
+}
+
+.closeButton:focus-visible,
+.switchModeButton:focus-visible {
+  outline: 2px solid var(--color-accent-on-dark);
+  outline-offset: 2px;
+}
+
+.dialogBody {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  padding: 1rem;
+  background-color: var(--color-bg-subtle);
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  overscroll-behavior: contain;
+}
+
+/* Error recuperable */
+.errorBox {
+  background-color: #fdf2f2;
+  border: 1px solid #f5c2c0;
+  border-left: 4px solid #b3261e;
+  border-radius: var(--radius-sm);
+  padding: 0.9rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.errorBoxTitle {
+  font-family: var(--font-heading);
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #8c1d18;
+}
+
+.errorBoxText {
+  font-size: 0.875rem;
+  color: var(--color-text-primary);
+  line-height: 1.45;
+}
+
+.errorBoxActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.25rem;
+}
+
+.errorPrimaryAction,
+.errorSecondaryAction {
+  font-family: var(--font-heading);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  padding: 0.5rem 0.9rem;
+  border-radius: var(--radius-sm);
+  min-height: 44px;
+}
+
+.errorPrimaryAction {
+  background-color: var(--color-green-deep);
+  color: var(--color-white);
+}
+
+.errorSecondaryAction {
+  background-color: var(--color-white);
+  color: var(--color-green-deep);
+  border: 1px solid var(--color-green-deep);
+}
+
+/* Vista de Voz */
+.voiceStage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.9rem;
+  flex: 1 1 auto;
+  padding-top: 0.5rem;
+}
+
+.voiceStateCaption {
+  font-family: var(--font-heading);
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--color-green-deep);
+  text-align: center;
+}
+
+.voiceTranscript {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  margin-top: 0.5rem;
+}
+
+/* Vista de Chat Escrito */
+.chatMessages {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  flex: 1 1 auto;
+}
+
+.chatWelcome {
+  background-color: var(--color-white);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 0.9rem 1rem;
+}
+
+.chatWelcome p {
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+}
+
+.messageUser,
+.messageAgent {
+  max-width: 88%;
+  padding: 0.65rem 0.9rem;
+  border-radius: var(--radius-md);
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  word-wrap: break-word;
+  overflow-wrap: anywhere;
+}
+
+.messageUser {
+  align-self: flex-end;
+  background-color: var(--color-green-deep);
+  color: var(--color-white);
+  border-bottom-right-radius: 2px;
+}
+
+.messageAgent {
+  align-self: flex-start;
+  background-color: var(--color-white);
+  color: var(--color-text-primary);
+  border: 1px solid var(--color-border);
+  border-bottom-left-radius: 2px;
+}
+
+.messageAuthor {
+  font-family: var(--font-heading);
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  opacity: 0.75;
+}
+
+.messageText {
+  font-size: 0.92rem;
+  line-height: 1.48;
+  color: inherit;
+  white-space: pre-wrap;
+}
+
+.typingIndicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  align-self: flex-start;
+  padding: 0.5rem 0.8rem;
+  background-color: var(--color-white);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  font-size: 0.8125rem;
+  color: var(--color-text-secondary);
+}
+
+.typingDots {
+  display: inline-flex;
+  gap: 4px;
+}
+
+.typingDots span {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: var(--color-copper);
+  animation: dotBounce 1.2s ease-in-out infinite;
+}
+
+.typingDots span:nth-child(2) {
+  animation-delay: 0.18s;
+}
+
+.typingDots span:nth-child(3) {
+  animation-delay: 0.36s;
+}
+
+@keyframes dotBounce {
+  0%,
+  80%,
+  100% {
+    opacity: 0.35;
+    transform: translateY(0);
+  }
+  40% {
+    opacity: 1;
+    transform: translateY(-3px);
+  }
+}
+
+/* Pie de diálogo */
+.dialogFooter {
+  background-color: var(--color-white);
+  border-top: 1px solid var(--color-border);
+  padding: 0.85rem 1rem max(0.85rem, env(safe-area-inset-bottom));
+  flex-shrink: 0;
+}
+
+.voiceControls {
+  display: flex;
+  gap: 0.65rem;
+  flex-wrap: wrap;
+}
+
+.muteButton,
+.endVoiceButton {
+  flex: 1 1 140px;
+  min-height: 46px;
+  padding: 0.65rem 1rem;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-heading);
+  font-size: 0.84rem;
+  font-weight: 600;
+}
+
+.muteButton {
+  background-color: var(--color-bg-subtle);
+  color: var(--color-green-deep);
+  border: 1.5px solid var(--color-border);
+}
+
+.muteButton:hover:not(:disabled) {
+  border-color: var(--color-green-deep);
+}
+
+.endVoiceButton {
+  background-color: #9e1c16;
+  color: var(--color-white);
+  border: 1.5px solid #9e1c16;
+}
+
+.endVoiceButton:hover:not(:disabled) {
+  background-color: #7f1510;
+}
+
+.muteButton:disabled,
+.endVoiceButton:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.chatComposer {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.chatTextarea {
+  width: 100%;
+  resize: none;
+  padding: 0.65rem 0.8rem;
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-body);
+  font-size: 1rem;
+  color: var(--color-text-primary);
+  background-color: var(--color-white);
+  line-height: 1.4;
+}
+
+.chatTextarea:focus {
+  outline: none;
+  border-color: var(--color-copper);
+  box-shadow: 0 0 0 3px rgba(176, 118, 50, 0.15);
+}
+
+.chatTextarea:disabled {
+  background-color: var(--color-bg-subtle);
+  color: var(--color-text-muted);
+}
+
+.chatComposerActions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.endTextButton {
+  font-family: var(--font-heading);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--radius-sm);
+  min-height: 44px;
+}
+
+.endTextButton:hover {
+  color: var(--color-green-deep);
+  background-color: var(--color-bg-subtle);
+}
+
+.sendButton {
+  background-color: var(--color-green-deep);
+  color: var(--color-white);
+  font-family: var(--font-heading);
+  font-size: 0.875rem;
+  font-weight: 600;
+  padding: 0.6rem 1.35rem;
+  border-radius: var(--radius-sm);
+  min-height: 44px;
+  transition: background-color var(--transition-fast);
+}
+
+.sendButton:hover:not(:disabled) {
+  background-color: var(--color-green-surface);
+}
+
+.sendButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ==========================================================================
+   Barra inferior compacta para móvil/tableta (< 1024 px)
+   z-index: 900 -> siempre debajo de .mobileNavOverlay (999) y .header (1000)
+   ========================================================================== */
+.mobileBar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 900;
+  background-color: rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-top: 1px solid var(--color-border);
+  box-shadow: 0 -6px 20px rgba(8, 44, 35, 0.1);
+  padding: 0.55rem 0.9rem max(0.55rem, env(safe-area-inset-bottom));
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.65rem;
+  max-width: 100vw;
+}
+
+@media (min-width: 1024px) {
+  .mobileBar {
+    display: none;
+  }
+}
+
+.mobileBarIdentity {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.mobileBarLabel {
+  font-family: var(--font-heading);
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--color-green-deep);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mobileBarActions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.mobileVoiceBtn,
+.mobileTextBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  min-height: 44px;
+  min-width: 44px;
+  padding: 0.5rem 0.85rem;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-heading);
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.mobileVoiceBtn {
+  background-color: var(--color-green-deep);
+  color: var(--color-white);
+  border: 1.5px solid var(--color-green-deep);
+}
+
+.mobileTextBtn {
+  background-color: var(--color-white);
+  color: var(--color-green-deep);
+  border: 1.5px solid var(--color-green-deep);
+}
+
+/* ==========================================================================
+   Respeto estricto a prefers-reduced-motion
+   ========================================================================== */
+@media (prefers-reduced-motion: reduce) {
+  .robotStage,
+  .robotFigure,
+  .visorHalo,
+  .visorRing,
+  .typingDots span,
+  .voiceButton,
+  .textButton {
+    animation: none !important;
+    transition: none !important;
+    transform: none !important;
   }
 }
