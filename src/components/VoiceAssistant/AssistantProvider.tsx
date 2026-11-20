@@ -23,7 +23,56 @@ import type {
   ChatMessage,
 } from "./types";
 
-const ELEVENLABS_AGENT_ID = "agent_9101m7n94v6kesnbxdb3283fjryz";
+export const ELEVENLABS_AGENT_ID_REGEX = /^agent_[a-zA-Z0-9_-]{10,64}$/;
+
+export interface ResolvedAgentConfig {
+  agentId: string;
+  error?: string;
+}
+
+/**
+ * Resuelve y valida estrictamente el Agent ID de ElevenLabs desde la variable de entorno.
+ * Protocolo: SR-ALINEVA-WHATSAPP-CONSENT-GUARD-02-B
+ *
+ * Exige configuración explícita en todos los entornos:
+ * - Ausente: error, sin fallback.
+ * - Vacía: error.
+ * - Formato inválido: error.
+ * - Válida: devuelve el Agent ID configurado.
+ */
+export function resolveAssistantAgentId(envValue?: string): ResolvedAgentConfig {
+  const raw =
+    envValue !== undefined ? envValue : process.env.NEXT_PUBLIC_ELEVENLABS_AGENT_ID;
+
+  if (raw === undefined || raw === null) {
+    return {
+      agentId: "",
+      error:
+        "NEXT_PUBLIC_ELEVENLABS_AGENT_ID no está configurado en las variables de entorno.",
+    };
+  }
+
+  const trimmed = raw.trim();
+
+  if (trimmed === "") {
+    return {
+      agentId: "",
+      error: "NEXT_PUBLIC_ELEVENLABS_AGENT_ID no puede ser una cadena vacía.",
+    };
+  }
+
+  if (!ELEVENLABS_AGENT_ID_REGEX.test(trimmed)) {
+    return {
+      agentId: "",
+      error:
+        "NEXT_PUBLIC_ELEVENLABS_AGENT_ID tiene un formato inválido. Debe comenzar con 'agent_' seguido de caracteres alfanuméricos válidos.",
+    };
+  }
+
+  return {
+    agentId: trimmed,
+  };
+}
 
 const AssistantControllerContext = createContext<AssistantContextValue | null>(
   null
@@ -503,9 +552,14 @@ function AssistantControllerInner({ children }: { children: React.ReactNode }) {
         setStatusAnnouncement("Conectando conversación por voz con Alineva.");
         intentionalCloseRef.current = false;
 
+        const { agentId, error: agentError } = resolveAssistantAgentId();
+        if (agentError || !agentId) {
+          throw new Error(agentError || "Identificador de agente no configurado.");
+        }
+
         // 3. Iniciar sesión oficial de voz vía WebRTC
         conversationRef.current.startSession({
-          agentId: ELEVENLABS_AGENT_ID,
+          agentId,
           connectionType: "webrtc",
           textOnly: false,
           stripAudioTags: true,
@@ -561,9 +615,14 @@ function AssistantControllerInner({ children }: { children: React.ReactNode }) {
         setStatusAnnouncement("Conectando chat escrito con Alineva sin micrófono.");
         intentionalCloseRef.current = false;
 
+        const { agentId, error: agentError } = resolveAssistantAgentId();
+        if (agentError || !agentId) {
+          throw new Error(agentError || "Identificador de agente no configurado.");
+        }
+
         // 2. Iniciar sesión exclusivamente por texto vía WebSocket (CERO audio / CERO micrófono)
         conversationRef.current.startSession({
-          agentId: ELEVENLABS_AGENT_ID,
+          agentId,
           connectionType: "websocket",
           textOnly: true,
           stripAudioTags: true,

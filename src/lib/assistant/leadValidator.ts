@@ -1,6 +1,6 @@
 /**
  * Validación estricta, sanitización y resolución de canal para el Asistente Virtual ElevenLabs.
- * Protocolo: SR-ALINEVA-VOICE-TEXT-02B
+ * Protocolo: SR-ALINEVA-WHATSAPP-CONSENT-GUARD-02-B
  */
 
 import { AUTHORIZED_INTERESTS, AuthorizedInterest } from "../hubspot/config";
@@ -26,15 +26,36 @@ export interface ElevenLabsLeadPayload {
   isTextOnly?: unknown;
 }
 
+export interface WhatsAppGuardDecision {
+  allowWhatsApp: boolean;
+  sanitizedNumber?: string;
+  reason: string;
+}
+
 export interface AssistantLeadValidationResult {
   ok: boolean;
   errors: Record<string, string>;
+  warning?: string;
+  warningReason?: string;
   sanitizedData?: SanitizedLeadData;
   sourceChannel?: AssistantSourceChannel;
   isTextOnly?: boolean;
 }
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+/**
+ * Política temporal fail-closed para WhatsApp (SR-ALINEVA-WHATSAPP-CONSENT-GUARD-02-B).
+ * Mientras no exista una fuente autoritativa independiente del LLM para auditar
+ * los turnos role="user", ningún WhatsApp nuevo se persiste en CRM.
+ * Se preserva estrictamente el teléfono tradicional y correo electrónico.
+ */
+export function canPersistWhatsApp(): WhatsAppGuardDecision {
+  return {
+    allowWhatsApp: false,
+    reason: "AUTHORITATIVE_TRANSCRIPT_UNAVAILABLE",
+  };
+}
 
 /**
  * Resuelve el canal de origen en HubSpot exclusivamente a partir del booleano
@@ -61,8 +82,7 @@ export function matchAuthorizedInterest(raw: string): AuthorizedInterest | null 
 
 function validatePhoneValue(
   rawValue: unknown,
-  fieldLabel: string,
-  strictMobile: boolean
+  fieldLabel: string
 ): { value?: string; error?: string } {
   if (rawValue === undefined || rawValue === null || rawValue === "") {
     return {};
@@ -82,17 +102,6 @@ function validatePhoneValue(
   }
   if (/(?:https?:\/\/|www\.|\.[a-z]{2,})/i.test(trimmed)) {
     return { error: `El campo ${fieldLabel} no puede contener enlaces web.` };
-  }
-  if (strictMobile) {
-    if (!/^\+?[0-9\s\-().]+$/.test(trimmed)) {
-      return { error: `El campo ${fieldLabel} contiene caracteres no válidos.` };
-    }
-    const digits = trimmed.replace(/\D/g, "");
-    if (digits.length < 7 || digits.length > 15) {
-      return {
-        error: `El campo ${fieldLabel} debe contener entre 7 y 15 dígitos.`,
-      };
-    }
   }
   return { value: trimmed };
 }
@@ -162,7 +171,7 @@ export function validateAssistantLeadPayload(
       "El parámetro isTextOnly es obligatorio y debe ser un valor booleano.";
   }
 
-  // 4. Medios de contacto opcionales individualmente, pero al menos uno requerido
+  // 4. Medios de contacto: email y phone
   let sanitizedEmail = "";
   if (raw.email !== undefined && raw.email !== null && raw.email !== "") {
     if (typeof raw.email !== "string") {
@@ -179,26 +188,38 @@ export function validateAssistantLeadPayload(
     }
   }
 
-  const phoneCheck = validatePhoneValue(raw.phone, "phone", false);
+  const phoneCheck = validatePhoneValue(raw.phone, "phone");
   if (phoneCheck.error) {
     errors.phone = phoneCheck.error;
   }
 
-  const whatsappCheck = validatePhoneValue(raw.whatsapp, "whatsapp", true);
-  if (whatsappCheck.error) {
-    errors.whatsapp = whatsappCheck.error;
+  // 5. Política temporal fail-closed para WhatsApp (SR-ALINEVA-WHATSAPP-CONSENT-GUARD-02-B)
+  // Cualquier WhatsApp entrante se ignora sin invalidar el lead; se emite warning sanitizado.
+  let warning: string | undefined = undefined;
+  let warningReason: string | undefined = undefined;
+
+  const rawWhatsappStr =
+    raw.whatsapp !== undefined && raw.whatsapp !== null
+      ? String(raw.whatsapp).trim()
+      : "";
+
+  if (rawWhatsappStr !== "") {
+    const decision = canPersistWhatsApp();
+    warning = "WHATSAPP_CONSENT_NOT_VERIFIED";
+    warningReason = decision.reason;
   }
 
-  if (!sanitizedEmail && !phoneCheck.value && !whatsappCheck.value) {
+  // 6. Validación de canales de contacto autorizados verificables
+  // Se requiere al menos un medio autorizado verificable (correo electrónico o teléfono tradicional).
+  if (!sanitizedEmail && !phoneCheck.value) {
     errors.contactChannel =
-      "Se requiere al menos un medio de contacto autorizado: correo electrónico, teléfono o WhatsApp.";
+      "Se requiere al menos un medio de contacto autorizado verificable (correo electrónico o teléfono). WhatsApp permanece deshabilitado temporalmente hasta contar con consentimiento verificable.";
   }
 
-  // Si no hay correo, validar que el teléfono/WhatsApp tenga dígitos suficientes para generar identificador
+  // Si no hay correo, generar identificador seguro a partir del teléfono primario verificado
   let effectiveEmail = sanitizedEmail;
-  if (!effectiveEmail && (whatsappCheck.value || phoneCheck.value)) {
-    const primaryPhone = whatsappCheck.value || phoneCheck.value || "";
-    const digitsOnly = primaryPhone.replace(/\D/g, "");
+  if (!effectiveEmail && phoneCheck.value) {
+    const digitsOnly = phoneCheck.value.replace(/\D/g, "");
     if (digitsOnly.length < 7) {
       errors.contactChannel =
         "El número telefónico proporcionado debe contener al menos 7 dígitos cuando no se proporciona correo electrónico.";
@@ -228,6 +249,8 @@ export function validateAssistantLeadPayload(
   return {
     ok: true,
     errors: {},
+    warning,
+    warningReason,
     isTextOnly,
     sourceChannel,
     sanitizedData: {
@@ -236,7 +259,7 @@ export function validateAssistantLeadPayload(
       company: company.slice(0, 120),
       email: effectiveEmail.slice(0, 120),
       phone: phoneCheck.value,
-      mobilePhone: whatsappCheck.value,
+      mobilePhone: undefined,
       interest: canonicalInterest,
       message: formattedMessage,
       privacyConsent: true,

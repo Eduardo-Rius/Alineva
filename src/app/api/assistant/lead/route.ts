@@ -68,6 +68,15 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     );
   }
 
+  // Registro de advertencia técnica sanitizada si WhatsApp no fue acreditado
+  if (validation.warning) {
+    console.warn("[ElevenLabs Server Tool] Advertencia de consentimiento WhatsApp:", {
+      warning: validation.warning,
+      reason: validation.warningReason,
+      channel: validation.sourceChannel,
+    });
+  }
+
   // 5. Envío a HubSpot CRM mediante cliente canónico (con política first-touch)
   try {
     const hubspotClient = new HubSpotClient();
