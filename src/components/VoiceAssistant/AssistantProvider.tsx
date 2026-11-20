@@ -410,6 +410,11 @@ function AssistantControllerInner({ children }: { children: React.ReactNode }) {
     isSendingRef.current = false;
     setIsAgentTyping(false);
     setIsRequestingMic(false);
+    if (process.env.NODE_ENV !== "production") {
+      const errName = context instanceof Error ? context.name : "ConversationError";
+      const errMessage = context instanceof Error ? context.message : message;
+      console.error(`[Assistant Error] ${errName}: ${errMessage}`);
+    }
     const mapped = mapErrorToSpanish(
       context instanceof Error ? context : new Error(message),
       activeModeRef.current
@@ -529,26 +534,7 @@ function AssistantControllerInner({ children }: { children: React.ReactNode }) {
         updateActiveMode("voice");
         setIsPanelOpen(true);
         setVisualState("connecting");
-        setIsRequestingMic(true);
-        setStatusAnnouncement("Solicitando permiso de micrófono para hablar con el asistente.");
-
-        // 2. Solicitar micrófono SOLO como consecuencia de esta acción explícita del usuario
-        if (
-          typeof navigator === "undefined" ||
-          !navigator.mediaDevices ||
-          typeof navigator.mediaDevices.getUserMedia !== "function"
-        ) {
-          throw new DOMException(
-            "Micrófono no disponible en este navegador",
-            "NotFoundError"
-          );
-        }
-
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        // Liberar pista de verificación de permisos para que WebRTC tome el dispositivo sin conflicto
-        stream.getTracks().forEach((track) => track.stop());
         setIsRequestingMic(false);
-
         setStatusAnnouncement("Conectando conversación por voz con Alineva.");
         intentionalCloseRef.current = false;
 
@@ -557,8 +543,8 @@ function AssistantControllerInner({ children }: { children: React.ReactNode }) {
           throw new Error(agentError || "Identificador de agente no configurado.");
         }
 
-        // 3. Iniciar sesión oficial de voz vía WebRTC
-        conversationRef.current.startSession({
+        // 2. Iniciar sesión oficial de voz vía WebRTC delegando la captura de audio directamente al SDK
+        await conversationRef.current.startSession({
           agentId,
           connectionType: "webrtc",
           textOnly: false,
@@ -571,6 +557,11 @@ function AssistantControllerInner({ children }: { children: React.ReactNode }) {
         });
       } catch (error: unknown) {
         setIsRequestingMic(false);
+        if (process.env.NODE_ENV !== "production") {
+          const errName = error instanceof Error ? error.name : "UnknownError";
+          const errMessage = error instanceof Error ? error.message : String(error);
+          console.error(`[Assistant Voice Error] ${errName}: ${errMessage}`);
+        }
         const mapped = mapErrorToSpanish(error, "voice");
         setVisualState("error");
         setErrorMessage(mapped.message);
