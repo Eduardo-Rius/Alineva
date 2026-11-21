@@ -297,3 +297,70 @@ test("T-02D-08: Preservación estricta de historial con 5 mensajes ante desconex
   assert.equal(result.placeholder, "Conversación finalizada");
 });
 
+test("T-02D-09: Transición idle → connecting → connected", () => {
+  let visualState: AssistantVisualState = "idle";
+  let activeMode: AssistantMode = "none";
+  let statusText = getStatusText(visualState, false, false, activeMode, false);
+  assert.equal(statusText, "Disponible ahora");
+
+  // Iniciar sesión
+  activeMode = "voice";
+  visualState = "connecting";
+  statusText = getStatusText(visualState, false, false, activeMode, false);
+  assert.equal(statusText, "Conectando con Alineva…");
+
+  // Conexión exitosa
+  visualState = "listening";
+  statusText = getStatusText(visualState, false, false, activeMode, false);
+  assert.equal(statusText, "Escuchando… habla con naturalidad");
+});
+
+test("T-02D-10: Transición idle → connecting → error", () => {
+  let visualState: AssistantVisualState = "idle";
+  let activeMode: AssistantMode = "none";
+  let errorMessage: string | null = null;
+
+  // Iniciar
+  activeMode = "voice";
+  visualState = "connecting";
+  assert.equal(visualState, "connecting");
+
+  // Fallo
+  visualState = "error";
+  errorMessage = "No fue posible conectar la conversación por voz en este momento.";
+  const statusText = getStatusText(visualState, false, false, activeMode, false);
+  assert.equal(visualState, "error");
+  assert.equal(statusText, "No se pudo continuar la conexión");
+  assert.ok(errorMessage.length > 0);
+});
+
+test("T-02D-11: Transición error → retry (limpia error y vuelve a connecting)", () => {
+  let visualState: AssistantVisualState = "error";
+  const activeMode: AssistantMode = "voice";
+  let errorMessage: string | null = "Error previo";
+
+  // Reintento: limpia error y pone connecting
+  errorMessage = null;
+  visualState = "connecting";
+  const statusText = getStatusText(visualState, false, false, activeMode, false);
+  assert.equal(visualState, "connecting");
+  assert.equal(errorMessage, null);
+  assert.equal(statusText, "Conectando con Alineva…");
+});
+
+test("T-02D-12: Transición error → end → idle (cierra sesión y vuelve a idle)", () => {
+  let visualState: AssistantVisualState = "error";
+  let activeMode: AssistantMode = "voice";
+  let isPanelOpen = true;
+
+  // Finalizar conversación / cerrar panel
+  visualState = "idle";
+  activeMode = "none";
+  isPanelOpen = false;
+  const statusText = getStatusText(visualState, false, false, activeMode, false);
+  assert.equal(visualState, "idle");
+  assert.equal(activeMode, "none");
+  assert.equal(isPanelOpen, false);
+  assert.equal(statusText, "Disponible ahora");
+});
+

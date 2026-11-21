@@ -74,6 +74,33 @@ export function resolveAssistantAgentId(envValue?: string): ResolvedAgentConfig 
   };
 }
 
+/**
+ * Observabilidad diagnóstica exclusiva para el dominio DEVELOP (SR-ALINEVA-VOICE-STATE-DIAG-02).
+ * Estrictamente deshabilitada en producción (alineva.netlify.app).
+ * Registra únicamente nombres de etapa y estados sanitizados, sin tokens, credenciales ni PII.
+ */
+export function isVoiceDiagEnabled(): boolean {
+  if (typeof window === "undefined") return false;
+  const host = window.location.hostname;
+  return (
+    host === "develop--alineva.netlify.app" ||
+    host === "localhost" ||
+    host === "127.0.0.1"
+  );
+}
+
+function sanitizeDiagText(raw: string): string {
+  return raw
+    .replace(/[a-zA-Z0-9_-]{20,}/g, "[REDACTED_ID]")
+    .replace(/[^\w\s.:|/-]/g, "");
+}
+
+export function logVoiceDiag(stage: string, detail?: string): void {
+  if (!isVoiceDiagEnabled()) return;
+  const detailSuffix = detail ? `: ${sanitizeDiagText(detail)}` : "";
+  console.log(`[VoiceDiag] ${stage}${detailSuffix}`);
+}
+
 const AssistantControllerContext = createContext<AssistantContextValue | null>(
   null
 );
@@ -246,6 +273,7 @@ function AssistantControllerInner({ children }: { children: React.ReactNode }) {
 
   const handleDisconnect = useCallback(
     (details: DisconnectionDetails) => {
+      logVoiceDiag("disconnect callback", details.reason);
       streamingMessageIdRef.current = null;
       isSendingRef.current = false;
       setIsAgentTyping(false);
@@ -258,6 +286,7 @@ function AssistantControllerInner({ children }: { children: React.ReactNode }) {
       }
 
       if (details.reason === "error") {
+        logVoiceDiag("disconnect reason error", details.message);
         const mapped = mapErrorToSpanish(
           new Error(details.message || "Error de conexión"),
           activeModeRef.current
@@ -293,6 +322,7 @@ function AssistantControllerInner({ children }: { children: React.ReactNode }) {
   }, []);
 
   const handleStatusChange = useCallback((prop: { status: Status }) => {
+    logVoiceDiag("status callback", prop.status);
     if (prop.status === "connecting") {
       setVisualState("connecting");
     } else if (prop.status === "disconnecting") {
@@ -410,9 +440,10 @@ function AssistantControllerInner({ children }: { children: React.ReactNode }) {
     isSendingRef.current = false;
     setIsAgentTyping(false);
     setIsRequestingMic(false);
+    const errName = context instanceof Error ? context.name : "ConversationError";
+    const errMessage = context instanceof Error ? context.message : message;
+    logVoiceDiag("error callback", `${errName} | ${errMessage}`);
     if (process.env.NODE_ENV !== "production") {
-      const errName = context instanceof Error ? context.name : "ConversationError";
-      const errMessage = context instanceof Error ? context.message : message;
       console.error(`[Assistant Error] ${errName}: ${errMessage}`);
     }
     const mapped = mapErrorToSpanish(
@@ -508,12 +539,17 @@ function AssistantControllerInner({ children }: { children: React.ReactNode }) {
 
   const startVoiceSession = useCallback(
     async (invoker?: HTMLElement | null): Promise<void> => {
-      if (transitionLockRef.current) return;
+      logVoiceDiag("startVoiceSession invoked");
+      if (transitionLockRef.current) {
+        logVoiceDiag("transition lock active - early return");
+        return;
+      }
       if (
         activeModeRef.current === "voice" &&
         (conversationRef.current.status === "connected" ||
           conversationRef.current.status === "connecting")
       ) {
+        logVoiceDiag("voice session already connecting/connected - early return");
         setIsPanelOpen(true);
         return;
       }
@@ -538,12 +574,23 @@ function AssistantControllerInner({ children }: { children: React.ReactNode }) {
         setStatusAnnouncement("Conectando conversación por voz con Alineva.");
         intentionalCloseRef.current = false;
 
+        logVoiceDiag("preflight state accepted");
+
         const { agentId, error: agentError } = resolveAssistantAgentId();
         if (agentError || !agentId) {
+          logVoiceDiag("agentId error", agentError);
           throw new Error(agentError || "Identificador de agente no configurado.");
+        }
+        logVoiceDiag("agentId present");
+
+        if (conversationRef.current) {
+          logVoiceDiag("conversation ref present");
+        } else {
+          logVoiceDiag("conversation ref missing");
         }
 
         // 2. Iniciar sesión oficial de voz vía WebRTC delegando la captura de audio directamente al SDK
+        logVoiceDiag("calling startSession");
         await conversationRef.current.startSession({
           agentId,
           connectionType: "webrtc",
@@ -555,11 +602,13 @@ function AssistantControllerInner({ children }: { children: React.ReactNode }) {
             },
           },
         });
+        logVoiceDiag("startSession resolved");
       } catch (error: unknown) {
         setIsRequestingMic(false);
+        const errName = error instanceof Error ? error.name : "UnknownError";
+        const errMessage = error instanceof Error ? error.message : String(error);
+        logVoiceDiag("startSession rejected", `${errName} | ${errMessage}`);
         if (process.env.NODE_ENV !== "production") {
-          const errName = error instanceof Error ? error.name : "UnknownError";
-          const errMessage = error instanceof Error ? error.message : String(error);
           console.error(`[Assistant Voice Error] ${errName}: ${errMessage}`);
         }
         const mapped = mapErrorToSpanish(error, "voice");
