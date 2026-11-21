@@ -66,6 +66,9 @@ export function MobileAssistantBar() {
           disabled={isBusy}
           aria-label="Hablar con el asistente por voz"
           onClick={(e) => {
+            if (typeof window !== "undefined" && window.__ALINEVA_VOICE_DIAG__) {
+              window.__ALINEVA_VOICE_DIAG__.primaryClick = true;
+            }
             logVoiceEntry("primary button clicked");
             logVoiceEntry(`availability: ${visualState}`);
             logVoiceEntry("handler selected: startVoiceSession");

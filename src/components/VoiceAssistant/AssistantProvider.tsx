@@ -108,6 +108,23 @@ export function logVoiceDiag(stage: string, detail?: string): void {
   console.warn(`[VoiceDiag] ${stage}${detailSuffix}`);
 }
 
+export interface VoiceDiagGlobalProbe {
+  build: string;
+  hostname: string;
+  enabled: boolean;
+  providerMounted: boolean;
+  primaryClick?: boolean;
+  providerInvoked?: boolean;
+  sdkInvoked?: boolean;
+  errorName?: string;
+}
+
+declare global {
+  interface Window {
+    __ALINEVA_VOICE_DIAG__?: VoiceDiagGlobalProbe;
+  }
+}
+
 const AssistantControllerContext = createContext<AssistantContextValue | null>(
   null
 );
@@ -253,6 +270,19 @@ function AssistantControllerInner({ children }: { children: React.ReactNode }) {
   const msgCounterRef = useRef(0);
   const intentionalCloseRef = useRef(false);
   const streamingMessageIdRef = useRef<string | null>(null);
+
+  // Sonda forense de observabilidad exclusiva para DEVELOP (SR-ALINEVA-VOICE-ENTRYPOINT-DIAG-03-A)
+  useEffect(() => {
+    if (typeof window !== "undefined" && isVoiceDiagEnabled()) {
+      window.__ALINEVA_VOICE_DIAG__ = {
+        build: "6769851",
+        hostname: window.location.hostname,
+        enabled: true,
+        providerMounted: true,
+      };
+      console.warn("[VoiceProbe] provider mounted on develop");
+    }
+  }, []);
 
   const nextMessageId = useCallback((): string => {
     msgCounterRef.current += 1;
@@ -546,6 +576,9 @@ function AssistantControllerInner({ children }: { children: React.ReactNode }) {
 
   const startVoiceSession = useCallback(
     async (invoker?: HTMLElement | null): Promise<void> => {
+      if (typeof window !== "undefined" && window.__ALINEVA_VOICE_DIAG__) {
+        window.__ALINEVA_VOICE_DIAG__.providerInvoked = true;
+      }
       logVoiceDiag("startVoiceSession invoked");
       if (transitionLockRef.current) {
         logVoiceDiag("transition lock active - early return");
@@ -597,6 +630,9 @@ function AssistantControllerInner({ children }: { children: React.ReactNode }) {
         }
 
         // 2. Iniciar sesión oficial de voz vía WebRTC delegando la captura de audio directamente al SDK
+        if (typeof window !== "undefined" && window.__ALINEVA_VOICE_DIAG__) {
+          window.__ALINEVA_VOICE_DIAG__.sdkInvoked = true;
+        }
         logVoiceDiag("calling startSession");
         await conversationRef.current.startSession({
           agentId,
@@ -614,6 +650,15 @@ function AssistantControllerInner({ children }: { children: React.ReactNode }) {
         setIsRequestingMic(false);
         const errName = error instanceof Error ? error.name : "UnknownError";
         const errMessage = error instanceof Error ? error.message : String(error);
+        const sanitizedErrorName =
+          error instanceof Error
+            ? error.name
+            : typeof error === "string"
+              ? "StringError"
+              : "UnknownError";
+        if (typeof window !== "undefined" && window.__ALINEVA_VOICE_DIAG__) {
+          window.__ALINEVA_VOICE_DIAG__.errorName = sanitizedErrorName;
+        }
         logVoiceDiag("startSession rejected", `${errName} | ${errMessage}`);
         if (process.env.NODE_ENV !== "production") {
           console.error(`[Assistant Voice Error] ${errName}: ${errMessage}`);

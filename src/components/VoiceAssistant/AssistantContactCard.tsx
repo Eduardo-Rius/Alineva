@@ -33,6 +33,9 @@ export function AssistantContactCard() {
     activeMode === "text" && visualState === "text-active";
 
   const handleVoiceClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    if (typeof window !== "undefined" && window.__ALINEVA_VOICE_DIAG__) {
+      window.__ALINEVA_VOICE_DIAG__.primaryClick = true;
+    }
     logVoiceEntry("primary button clicked");
     logVoiceEntry(`availability: ${visualState}`);
     if (isBusy) {

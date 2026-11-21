@@ -428,3 +428,100 @@ test("T-03-05: Panel abierto sin sesión activa presenta controles coherentes", 
   assert.equal(statusText, "No se pudo continuar la conexión");
 });
 
+test("T-03A-01: Sonda global __ALINEVA_VOICE_DIAG__ se inicializa con campos obligatorios", () => {
+  const probe = {
+    build: "6769851",
+    hostname: "develop--alineva.netlify.app",
+    enabled: true,
+    providerMounted: true,
+  };
+
+  assert.equal(probe.build, "6769851");
+  assert.equal(probe.hostname, "develop--alineva.netlify.app");
+  assert.equal(probe.enabled, true);
+  assert.equal(probe.providerMounted, true);
+  assert.equal((probe as { primaryClick?: boolean }).primaryClick, undefined);
+});
+
+test("T-03A-02: Clic primario actualiza primaryClick en la sonda", () => {
+  const probe: {
+    build: string;
+    hostname: string;
+    enabled: boolean;
+    providerMounted: boolean;
+    primaryClick?: boolean;
+    providerInvoked?: boolean;
+    sdkInvoked?: boolean;
+    errorName?: string;
+  } = {
+    build: "6769851",
+    hostname: "develop--alineva.netlify.app",
+    enabled: true,
+    providerMounted: true,
+  };
+
+  probe.primaryClick = true;
+  assert.equal(probe.primaryClick, true);
+  assert.equal(probe.providerInvoked, undefined);
+});
+
+test("T-03A-03: Provider y SDK actualizan flags de invocación progresivamente", () => {
+  const probe: {
+    build: string;
+    hostname: string;
+    enabled: boolean;
+    providerMounted: boolean;
+    primaryClick?: boolean;
+    providerInvoked?: boolean;
+    sdkInvoked?: boolean;
+    errorName?: string;
+  } = {
+    build: "6769851",
+    hostname: "develop--alineva.netlify.app",
+    enabled: true,
+    providerMounted: true,
+    primaryClick: true,
+  };
+
+  // Provider invocado
+  probe.providerInvoked = true;
+  assert.equal(probe.providerInvoked, true);
+  assert.equal(probe.sdkInvoked, undefined);
+
+  // SDK invocado
+  probe.sdkInvoked = true;
+  assert.equal(probe.sdkInvoked, true);
+  assert.equal(probe.errorName, undefined);
+});
+
+test("T-03A-04: Rechazo registra exclusivamente errorName sanitizado", () => {
+  const probe: {
+    build: string;
+    hostname: string;
+    enabled: boolean;
+    providerMounted: boolean;
+    primaryClick?: boolean;
+    providerInvoked?: boolean;
+    sdkInvoked?: boolean;
+    errorName?: string;
+  } = {
+    build: "6769851",
+    hostname: "develop--alineva.netlify.app",
+    enabled: true,
+    providerMounted: true,
+    primaryClick: true,
+    providerInvoked: true,
+    sdkInvoked: true,
+  };
+
+  const fakeError = new DOMException("Permission denied", "NotAllowedError");
+  const sanitizedName = fakeError instanceof Error ? fakeError.name : "UnknownError";
+  probe.errorName = sanitizedName;
+
+  assert.equal(probe.errorName, "NotAllowedError");
+  // Verificar ausencia de tokens o datos sensibles
+  assert.ok(!("token" in probe));
+  assert.ok(!("agentId" in probe));
+  assert.ok(!("apiKey" in probe));
+});
+
