@@ -75,7 +75,8 @@ export function resolveAssistantAgentId(envValue?: string): ResolvedAgentConfig 
 }
 
 /**
- * Observabilidad diagnóstica exclusiva para el dominio DEVELOP (SR-ALINEVA-VOICE-STATE-DIAG-02).
+ * Observabilidad diagnóstica exclusiva para el dominio DEVELOP (SR-ALINEVA-VOICE-ENTRYPOINT-DIAG-03).
+ * Utiliza console.warn para máxima visibilidad en DevTools sin ser suprimido por niveles de filtro.
  * Estrictamente deshabilitada en producción (alineva.netlify.app).
  * Registra únicamente nombres de etapa y estados sanitizados, sin tokens, credenciales ni PII.
  */
@@ -95,10 +96,16 @@ function sanitizeDiagText(raw: string): string {
     .replace(/[^\w\s.:|/-]/g, "");
 }
 
+export function logVoiceEntry(stage: string, detail?: string): void {
+  if (!isVoiceDiagEnabled()) return;
+  const detailSuffix = detail ? `: ${sanitizeDiagText(detail)}` : "";
+  console.warn(`[VoiceEntry] ${stage}${detailSuffix}`);
+}
+
 export function logVoiceDiag(stage: string, detail?: string): void {
   if (!isVoiceDiagEnabled()) return;
   const detailSuffix = detail ? `: ${sanitizeDiagText(detail)}` : "";
-  console.log(`[VoiceDiag] ${stage}${detailSuffix}`);
+  console.warn(`[VoiceDiag] ${stage}${detailSuffix}`);
 }
 
 const AssistantControllerContext = createContext<AssistantContextValue | null>(

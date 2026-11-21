@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import styles from "./VoiceAssistant.module.css";
-import { useAssistant } from "./AssistantProvider";
+import { useAssistant, logVoiceEntry } from "./AssistantProvider";
 import { AssistantRobot } from "./AssistantRobot";
 
 /**
@@ -66,6 +66,10 @@ export function MobileAssistantBar() {
           disabled={isBusy}
           aria-label="Hablar con el asistente por voz"
           onClick={(e) => {
+            logVoiceEntry("primary button clicked");
+            logVoiceEntry(`availability: ${visualState}`);
+            logVoiceEntry("handler selected: startVoiceSession");
+            logVoiceEntry("invoking provider startVoiceSession");
             void startVoiceSession(e.currentTarget);
           }}
         >

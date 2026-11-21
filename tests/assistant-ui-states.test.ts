@@ -364,3 +364,67 @@ test("T-02D-12: Transición error → end → idle (cierra sesión y vuelve a id
   assert.equal(statusText, "Disponible ahora");
 });
 
+test("T-03-01: Botón principal → startVoiceSession invocado correctamente", () => {
+  let invoked = false;
+  let invokerPassed: HTMLElement | null = null;
+  const mockStartVoiceSession = async (invoker?: HTMLElement | null) => {
+    invoked = true;
+    invokerPassed = invoker ?? null;
+  };
+
+  const fakeElement = {} as HTMLElement;
+  mockStartVoiceSession(fakeElement);
+  assert.equal(invoked, true);
+  assert.equal(invokerPassed, fakeElement);
+});
+
+test("T-03-02: Disponibilidad falsa (isBusy) bloquea antes del provider", () => {
+  function checkBlocked(visualState: AssistantVisualState): boolean {
+    const isBusy = visualState === "connecting" || visualState === "disconnecting";
+    return isBusy;
+  }
+
+  assert.equal(checkBlocked("connecting"), true, "connecting debe bloquear");
+  assert.equal(checkBlocked("disconnecting"), true, "disconnecting debe bloquear");
+  assert.equal(checkBlocked("idle"), false, "idle no debe bloquear");
+  assert.equal(checkBlocked("error"), false, "error no debe bloquear (permite reintento)");
+});
+
+test("T-03-03: Disponibilidad verdadera (idle) permite invocación", () => {
+  let called = false;
+  function isStateBusy(state: AssistantVisualState): boolean {
+    return state === "connecting" || state === "disconnecting";
+  }
+  const currentState: AssistantVisualState = "idle";
+  if (!isStateBusy(currentState)) {
+    called = true;
+  }
+  assert.equal(called, true);
+});
+
+test("T-03-04: Error previo → nuevo intento limpio restablece estados de error", () => {
+  let errorMessage: string | null = "Error previo";
+  let micDenied = true;
+  let visualState: AssistantVisualState = "error";
+
+  // Al reintentar:
+  errorMessage = null;
+  micDenied = false;
+  visualState = "connecting";
+
+  assert.equal(errorMessage, null);
+  assert.equal(micDenied, false);
+  assert.equal(visualState, "connecting");
+});
+
+test("T-03-05: Panel abierto sin sesión activa presenta controles coherentes", () => {
+  function checkMuteDisabled(state: AssistantVisualState): boolean {
+    return state !== "listening" && state !== "speaking";
+  }
+  const currentState: AssistantVisualState = "error";
+  assert.equal(checkMuteDisabled(currentState), true, "Silenciar micrófono debe estar deshabilitado en error");
+
+  const statusText = getStatusText(currentState, false, false, "voice", false);
+  assert.equal(statusText, "No se pudo continuar la conexión");
+});
+

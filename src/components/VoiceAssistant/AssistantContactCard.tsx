@@ -1,7 +1,7 @@
 "use client";
 
 import styles from "./VoiceAssistant.module.css";
-import { useAssistant } from "./AssistantProvider";
+import { useAssistant, logVoiceEntry } from "./AssistantProvider";
 import { AssistantRobot } from "./AssistantRobot";
 import type { AssistantVisualState } from "./types";
 
@@ -31,6 +31,22 @@ export function AssistantContactCard() {
     (visualState === "listening" || visualState === "speaking");
   const isTextActive =
     activeMode === "text" && visualState === "text-active";
+
+  const handleVoiceClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    logVoiceEntry("primary button clicked");
+    logVoiceEntry(`availability: ${visualState}`);
+    if (isBusy) {
+      logVoiceEntry(`blocked before provider: isBusy (${visualState})`);
+      return;
+    }
+    if (typeof startVoiceSession !== "function") {
+      logVoiceEntry("blocked before provider: startVoiceSession is not a function");
+      return;
+    }
+    logVoiceEntry("handler selected: startVoiceSession");
+    logVoiceEntry("invoking provider startVoiceSession");
+    void startVoiceSession(e.currentTarget);
+  };
 
   return (
     <aside
@@ -73,9 +89,7 @@ export function AssistantContactCard() {
           className={styles.voiceButton}
           disabled={isBusy}
           aria-busy={isBusy && activeMode === "voice"}
-          onClick={(e) => {
-            void startVoiceSession(e.currentTarget);
-          }}
+          onClick={handleVoiceClick}
         >
           <svg
             width="18"

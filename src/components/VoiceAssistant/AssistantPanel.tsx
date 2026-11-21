@@ -7,6 +7,7 @@ import {
   getStatusText,
   getDialogTitle,
   getComposerPlaceholder,
+  logVoiceEntry,
 } from "./AssistantProvider";
 import { AssistantRobot } from "./AssistantRobot";
 
@@ -42,6 +43,7 @@ export function AssistantPanel() {
     if (!dialog) return;
 
     if (isPanelOpen) {
+      logVoiceEntry("panel opened");
       if (!dialog.open) {
         try {
           dialog.showModal();
